@@ -1,0 +1,29 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+htmlcov/
+.coverage
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+*.env
+
+# Data
+my_cars.json
+
+# Node
+frontend/node_modules/
+
+# IDE
+.idea/
+.vscode/
+*.DS_Store
+
+# Logs
+*.log
