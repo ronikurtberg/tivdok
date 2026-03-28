@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ChevronDown, ChevronUp, Save, RotateCcw, ExternalLink } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronUp, Save, RotateCcw } from 'lucide-react'
 import axios from 'axios'
-
-const BALCAR_URL = 'https://balcar.co.il/?Aff1=GABrand&gad_source=1&gad_campaignid=14123148844&gbraid=0AAAAABUgJY45yoFHpRyxjeh2Xw20kFOxX'
 
 function PriceOption({ tier, price, label, reason, tag, tagColor, recommended }) {
   return (
@@ -321,29 +319,6 @@ export default function StepPrice({ car, market, history, onNext, onRestart }) {
             <div style={{ fontSize: 15, color: 'var(--muted)' }}>נסו לסרוק את יד2, או בדקו מחירים ידנית.</div>
           </div>
         )}
-
-        {/* Balcar upsell */}
-        <a
-          href={BALCAR_URL}
-          target="_blank"
-          rel="noreferrer"
-          style={{
-            display: 'flex', alignItems: 'center', gap: 14,
-            background: '#fffbeb', border: '1.5px solid #fcd34d',
-            borderRadius: 16, padding: '16px', textDecoration: 'none',
-          }}
-        >
-          <span style={{ fontSize: 32, flexShrink: 0 }}>🛡️</span>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 16, fontWeight: 800, color: '#92400e', marginBottom: 3 }}>
-              הגדילו את המחיר עם דוח Balcar
-            </div>
-            <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.5 }}>
-              קונים סומכים יותר על רכב עם דוח מאומת. תאונות, בעלות, עיקולים — שקיפות = מחיר גבוה יותר.
-            </div>
-          </div>
-          <ExternalLink size={18} color="#92400e" style={{ flexShrink: 0 }} />
-        </a>
 
         {/* Selling plan (collapsible) */}
         {plan && (

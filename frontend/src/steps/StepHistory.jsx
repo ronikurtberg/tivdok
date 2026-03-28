@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle2, AlertTriangle, ArrowRight, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react'
+import { CheckCircle2, AlertTriangle, ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
 import axios from 'axios'
-
-const BALCAR_URL = 'https://balcar.co.il/?Aff1=GABrand&gad_source=1&gad_campaignid=14123148844&gbraid=0AAAAABUgJY45yoFHpRyxjeh2Xw20kFOxX'
 
 function TimelineItem({ date, result, mileage, note, index }) {
   const passed = result && (result.includes('עבר') || result.includes('תקין') || result === '1' || result?.toLowerCase() === 'passed')
@@ -185,24 +183,6 @@ export default function StepHistory({ plate, onDone, onSkip }) {
                 ⚠️ {history.disclaimer}
               </div>
             )}
-
-            {/* Balcar upsell */}
-            <a href={BALCAR_URL} target="_blank" rel="noreferrer" style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              background: '#fffbeb', border: '1.5px solid #fcd34d',
-              borderRadius: 16, padding: '16px', textDecoration: 'none',
-            }}>
-              <span style={{ fontSize: 32, flexShrink: 0 }}>🛡️</span>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#92400e', marginBottom: 3 }}>
-                  קבלו דוח Balcar מלא
-                </div>
-                <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.5 }}>
-                  תאונות, עיקולים, שרשרת בעלות — שקיפות = קונים יותר רציניים ומחיר גבוה יותר.
-                </div>
-              </div>
-              <ExternalLink size={18} color="#92400e" style={{ flexShrink: 0 }} />
-            </a>
 
           </motion.div>
         )}

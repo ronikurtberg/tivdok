@@ -3,8 +3,6 @@ import { motion } from 'framer-motion'
 import { Search, ArrowRight, X, FileUp, FileCheck2 } from 'lucide-react'
 import axios from 'axios'
 
-const BALCAR_URL = 'https://balcar.co.il/?Aff1=GABrand&gad_source=1&gad_campaignid=14123148844&gbraid=0AAAAABUgJY45yoFHpRyxjeh2Xw20kFOxX'
-
 const HOW_IT_WORKS = [
   { icon: '🔍', title: 'הכניסו מספר רכב', sub: 'פשוט כמו גוגל' },
   { icon: '📊', title: 'מקבלים ניתוח שוק', sub: 'ממודעות אמיתיות ביד2' },
@@ -358,40 +356,6 @@ export default function StepLanding({ onFound }) {
           ))}
         </div>
       </motion.div>
-
-      {/* ── Balcar strip ── */}
-      <motion.a
-        href={BALCAR_URL}
-        target="_blank"
-        rel="noreferrer"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.6 }}
-        whileHover={{ scale: 1.01 }}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          background: '#fffbeb',
-          border: '1.5px solid #fcd34d',
-          borderRadius: 16,
-          padding: '16px 24px',
-          textDecoration: 'none',
-          maxWidth: 520,
-          width: '100%',
-        }}
-      >
-        <div style={{ fontSize: 32, flexShrink: 0 }}>🛡️</div>
-        <div>
-          <div style={{ fontSize: 16, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>
-            רוצים דוח היסטוריה מלא?
-          </div>
-          <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.5 }}>
-            דוח Balcar — תאונות, שעבודים, בעלויות. כל הסיפור של הרכב.
-          </div>
-        </div>
-        <div style={{ marginLeft: 'auto', fontSize: 22, color: '#d97706', flexShrink: 0 }}>←</div>
-      </motion.a>
 
     </div>
   )
