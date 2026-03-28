@@ -1,15 +1,15 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { RotateCcw, Bot, Megaphone, MessageSquare, Globe, TrendingUp, Lock, Send, Sparkles } from 'lucide-react'
 import axios from 'axios'
 
 const SUGGESTED_QUESTIONS = [
-  { icon: '💰', text: 'Is my asking price competitive?' },
-  { icon: '📝', text: 'Write me a Yad2 listing title and description' },
-  { icon: '🏁', text: 'What are my strongest selling points?' },
-  { icon: '⏱️', text: 'How long will it take to sell?' },
-  { icon: '🤝', text: 'How should I handle price negotiation?' },
-  { icon: '📸', text: 'What photos should I take?' },
+  { icon: '💰', text: 'המחיר שלי תחרותי?' },
+  { icon: '📝', text: 'כתוב לי כותרת ותיאור למודעה ביד2' },
+  { icon: '🏁', text: 'מה נקודות המכירה החזקות שלי?' },
+  { icon: '⏱️', text: 'כמה זמן ייקח למכור?' },
+  { icon: '🤝', text: 'איך להתמודד עם הורדת מחיר?' },
+  { icon: '📸', text: 'אילו תמונות כדאי לצלם?' },
 ]
 
 const FEATURES = [
@@ -94,25 +94,64 @@ function ChatMessage({ msg }) {
   )
 }
 
+function buildAutoGreeting(car, market) {
+  const mkt = market?.market || market
+  const hasMarket = mkt && mkt.count > 0
+  if (!car || !hasMarket) return null
+
+  const carName = [car.year, car.manufacturer_en || car.manufacturer, car.model_en || car.model].filter(Boolean).join(' ')
+  const median = mkt.median_price
+  const count = mkt.count
+  const askingPrice = car.asking_price ? Number(car.asking_price) : null
+  const km = car.km ? Number(car.km) : null
+  const avgKm = mkt.avg_km ? Number(mkt.avg_km) : null
+
+  const lines = [`היי! אני יועץ המכירה שלך ל${carName}.`, '']
+
+  if (median && askingPrice) {
+    const diffPct = Math.round(((askingPrice - median) / median) * 100)
+    if (diffPct > 5)
+      lines.push(`💡 המחיר שביקשת (₪${askingPrice.toLocaleString()}) גבוה ב-${diffPct}% מהחציון של השוק (₪${Math.round(median).toLocaleString()}). ייתכן שזה יאט את המכירה — שווה לבדוק.`)
+    else if (diffPct < -5)
+      lines.push(`✅ המחיר שלך (₪${askingPrice.toLocaleString()}) נמוך ב-${Math.abs(diffPct)}% מהחציון — רכב טוב לדיל. יש סיכוי שמכרת בזול.`)
+    else
+      lines.push(`✅ המחיר שלך (₪${askingPrice.toLocaleString()}) ממוקם מצוין — ±${Math.abs(diffPct)}% מהחציון (₪${Math.round(median).toLocaleString()}) מתוך ${count} מודעות.`)
+  } else if (median) {
+    lines.push(`📊 סרקתי ${count} מודעות. חציון השוק עומד על ₪${Math.round(median).toLocaleString()}.`)
+  }
+
+  if (km && avgKm) {
+    const kmDiff = km - avgKm
+    if (kmDiff < -10000)
+      lines.push(`🔋 ק"מ נמוך משמעותית מהממוצע (${km.toLocaleString()} לעומת ${Math.round(avgKm).toLocaleString()} ממוצע שוק) — זו נקודת מכירה חזקה, כדאי להדגיש.`)
+    else if (kmDiff > 15000)
+      lines.push(`⚠️ הק"מ שלך (${km.toLocaleString()}) גבוה מהממוצע (${Math.round(avgKm).toLocaleString()}) — קונים עשויים לנהל משא ומתן. היה מוכן.`)
+  }
+
+  lines.push('', 'שאל אותי כל דבר — אני כאן כדי לעזור לך למכור נכון.')
+  return lines.join('\n')
+}
+
 export default function StepAutopilot({ car, market, history, onRestart }) {
+  const autoGreeting = buildAutoGreeting(car, market)
+  const staticGreeting = car
+    ? `היי! אני יועץ המכירה האישי שלך לרכב זה. שאל אותי כל דבר.`
+    : 'היי! אני יועץ מכירת רכב. שאל אותי כל דבר.'
+
   const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: car
-        ? `Hi! I'm your personal selling advisor for this ${car.year ? car.year + ' ' : ''}${car.manufacturer || ''} ${car.model || ''}. I have your car's full data, live Yad2 market numbers, and test history loaded. Ask me anything — I'll give you specific advice based on your actual numbers, not generic tips.`
-        : "Hi! I'm your personal car-selling advisor. Ask me anything about selling your car.",
-    },
+    { role: 'assistant', content: autoGreeting || staticGreeting },
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const autoFiredRef = useRef(false)
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages, loading])
 
-  const sendMessage = async (text) => {
+  const sendMessage = useCallback(async (text) => {
     const msg = (text || input).trim()
     if (!msg || loading) return
     setInput('')
@@ -134,7 +173,32 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
       setLoading(false)
       inputRef.current?.focus()
     }
-  }
+  }, [input, loading, car, market, history])
+
+  useEffect(() => {
+    if (autoFiredRef.current || !autoGreeting) return
+    const mkt = market?.market || market
+    if (!mkt?.count) return
+    autoFiredRef.current = true
+    const initQ = car?.asking_price
+      ? 'תן לי ניתוח קצר של מיקום המחיר שלי בשוק והמלצה אחת עיקרית לפני שמתחיל.'
+      : 'תן לי סיכום קצר של השוק הנוכחי והמלצה אחת עיקרית לפני שמתחיל.'
+    const timer = setTimeout(async () => {
+      setLoading(true)
+      try {
+        const { data } = await axios.post('/api/chat', {
+          message: initQ,
+          car: car || null,
+          market: market || null,
+          official_price: market?.official_price || null,
+          history: history || null,
+        })
+        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      } catch {}
+      finally { setLoading(false) }
+    }, 900)
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleKey = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }

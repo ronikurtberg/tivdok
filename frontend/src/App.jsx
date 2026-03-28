@@ -14,54 +14,119 @@ const STEPS = [
   'history', 'market', 'price', 'autopilot',
 ]
 
-const STEP_LABELS = [
-  'התחלה', 'זיהוי', 'אישור', 'שוק?',
-  'היסטוריה', 'מודעות', 'מחיר', 'יועץ',
+const STEP_META = [
+  { label: 'התחלה',    icon: '🏠', mins: 0 },
+  { label: 'זיהוי',    icon: '🔍', mins: 1 },
+  { label: 'אישור',    icon: '✅', mins: 2 },
+  { label: 'שוק?',     icon: '📊', mins: 3 },
+  { label: 'היסטוריה', icon: '📋', mins: 4 },
+  { label: 'מודעות',   icon: '📈', mins: 5 },
+  { label: 'מחיר',     icon: '💰', mins: 6 },
+  { label: 'יועץ',     icon: '🤖', mins: 7 },
 ]
 
-function ProgressBar({ step }) {
-  const idx = STEPS.indexOf(step)
-  if (idx <= 0) return null
-  const pct = Math.round((idx / (STEPS.length - 1)) * 100)
+function CarBadge({ car }) {
+  if (!car) return null
+  const plate = car.plate || ''
+  const name = [car.year, car.manufacturer_en || car.manufacturer, car.model_en || car.model]
+    .filter(Boolean).join(' ')
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 200,
-      background: '#e0e8ff',
-    }}>
-      <motion.div
-        initial={false}
-        animate={{ width: `${pct}%` }}
-        transition={{ duration: 0.4 }}
-        style={{ height: '100%', background: '#1d6ef5', borderRadius: '0 2px 2px 0' }}
-      />
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: -8 }}
+      animate={{ opacity: 1, y: 0 }}
+      style={{
+        position: 'fixed', top: 8, right: 12, zIndex: 300,
+        display: 'flex', alignItems: 'center', gap: 8,
+        background: 'rgba(255,255,255,0.96)', backdropFilter: 'blur(12px)',
+        border: '1.5px solid #dde8ff',
+        borderRadius: 40, padding: '5px 14px 5px 6px',
+        boxShadow: '0 2px 12px rgba(29,110,245,0.12)',
+      }}
+    >
+      <div style={{
+        background: '#003DA5', borderRadius: 20,
+        padding: '3px 8px', display: 'flex', alignItems: 'center', gap: 4,
+      }}>
+        <span style={{ fontSize: 12 }}>🇮🇱</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff', letterSpacing: 1 }}>
+          {plate}
+        </span>
+      </div>
+      {name && (
+        <span style={{ fontSize: 13, fontWeight: 600, color: '#374151', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {name}
+        </span>
+      )}
+    </motion.div>
   )
 }
 
-function StepDots({ step }) {
+function Timeline({ step }) {
   const idx = STEPS.indexOf(step)
   if (idx <= 0) return null
+  const remaining = STEP_META.length - 1 - idx
+  const minsLeft = remaining * 1.5
+
   return (
     <div style={{
-      position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-      display: 'flex', gap: 8, zIndex: 100,
-      background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(10px)',
-      padding: '8px 16px', borderRadius: 40,
-      border: '1px solid #dde8ff',
-      boxShadow: '0 4px 20px rgba(29,110,245,0.1)',
+      position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 200,
+      background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(12px)',
+      borderTop: '1px solid #e0e8ff',
+      padding: '10px 16px 12px',
     }}>
-      {STEPS.slice(1).map((s, i) => (
-        <div
-          key={s}
-          title={STEP_LABELS[i + 1]}
-          style={{
-            width: i + 1 === idx ? 20 : 8,
-            height: 8, borderRadius: 4,
-            background: i + 1 <= idx ? '#1d6ef5' : '#c7d8ff',
-            transition: 'all 0.3s',
-          }}
-        />
-      ))}
+      {/* Step labels row */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        gap: 0, maxWidth: 520, margin: '0 auto 8px',
+        overflowX: 'auto',
+      }}>
+        {STEP_META.slice(1).map((s, i) => {
+          const stepIdx = i + 1
+          const done = stepIdx < idx
+          const active = stepIdx === idx
+          return (
+            <div key={s.label} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                <div style={{
+                  width: active ? 28 : 22, height: active ? 28 : 22,
+                  borderRadius: '50%',
+                  background: done ? '#1d6ef5' : active ? '#1d6ef5' : '#e0e8ff',
+                  border: active ? '2.5px solid #1d6ef5' : done ? '2px solid #1d6ef5' : '2px solid #c7d8ff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: active ? 13 : 11,
+                  boxShadow: active ? '0 0 0 3px rgba(29,110,245,0.18)' : 'none',
+                  transition: 'all 0.3s',
+                  color: done || active ? '#fff' : '#9ca3af',
+                  fontWeight: 700,
+                }}>
+                  {done ? '✓' : s.icon}
+                </div>
+                <span style={{
+                  fontSize: 10, fontWeight: active ? 700 : 500,
+                  color: active ? '#1d6ef5' : done ? '#6b7280' : '#9ca3af',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {s.label}
+                </span>
+              </div>
+              {i < STEP_META.length - 2 && (
+                <div style={{
+                  width: 20, height: 2, margin: '0 1px',
+                  background: i + 1 < idx ? '#1d6ef5' : '#e0e8ff',
+                  borderRadius: 2, marginBottom: 14, flexShrink: 0,
+                  transition: 'background 0.3s',
+                }} />
+              )}
+            </div>
+          )
+        })}
+      </div>
+      {/* Time estimate */}
+      <div style={{ textAlign: 'center', fontSize: 11, color: '#9ca3af', fontWeight: 500 }}>
+        {remaining === 0
+          ? '🎉 סיימתם!'
+          : `עוד ~${minsLeft < 1 ? 'פחות מדקה' : `${Math.round(minsLeft)} דקות`} לסיום`}
+      </div>
     </div>
   )
 }
@@ -87,8 +152,8 @@ export default function App() {
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)' }}>
-      <ProgressBar step={step} />
-      <StepDots step={step} />
+      <CarBadge car={step !== 'landing' ? (approvedCar || carData) : null} />
+      <Timeline step={step} />
 
       <AnimatePresence mode="wait">
         <motion.div
