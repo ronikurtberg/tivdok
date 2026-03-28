@@ -141,76 +141,32 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
   }
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(124,58,237,0.07) 0%, transparent 65%), var(--bg)',
-      padding: '40px 24px 100px',
-    }}>
-      <div style={{ maxWidth: 820, margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', background: '#f0f5ff', padding: '0 0 100px' }}>
 
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-            background: 'rgba(124,58,237,0.12)', color: '#a78bfa',
-            border: '1px solid rgba(124,58,237,0.3)',
-            padding: '4px 14px', borderRadius: 20, marginBottom: 14,
-          }}>
-            <Sparkles size={11} /> AI Advisor — Powered by your data
-          </div>
-          <h1 style={{ fontSize: 38, fontWeight: 900, letterSpacing: -1.5, lineHeight: 1.1, marginBottom: 10 }}>
-            Your Personal<br />
-            <span style={{ color: '#a78bfa' }}>Car Selling Advisor</span>
-          </h1>
-          <p style={{ fontSize: 15, color: 'var(--muted)', maxWidth: 500, margin: '0 auto', lineHeight: 1.6 }}>
-            Unlike ChatGPT, this advisor knows <strong style={{ color: '#fff' }}>your specific car</strong>, your live market data,
-            and your test history. Ask questions only an insider agent can answer.
-          </p>
-        </motion.div>
+      {/* Top bar */}
+      <div style={{
+        background: '#fff', padding: '14px 20px',
+        borderBottom: '1px solid var(--border)',
+        position: 'sticky', top: 0, zIndex: 10,
+      }}>
+        <div style={{ fontWeight: 800, fontSize: 20, color: '#111827' }}>🤖 יועץ מכירה AI</div>
+        <div style={{ fontSize: 13, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--green)', flexShrink: 0 }} />
+          {car ? `${car.year || ''} ${car.manufacturer || ''} ${car.model || ''}`.trim() : 'הרכב שלך'} — מחובר לנתונים חיים
+        </div>
+      </div>
+
+      <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
 
         {/* Chat panel */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--border)',
-            borderRadius: 20,
-            marginBottom: 28,
-            overflow: 'hidden',
-          }}
+          className="card"
+          style={{ padding: 0, overflow: 'hidden' }}
         >
-          {/* Chat header */}
-          <div style={{
-            padding: '14px 18px',
-            borderBottom: '1px solid var(--border)',
-            display: 'flex', alignItems: 'center', gap: 10,
-            background: 'linear-gradient(90deg, rgba(124,58,237,0.07) 0%, transparent 100%)',
-          }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(124,58,237,0.35), rgba(59,130,246,0.3))',
-              border: '1px solid rgba(124,58,237,0.4)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <Bot size={16} color="#a78bfa" />
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 14 }}>Car Selling Advisor</div>
-              <div style={{ fontSize: 11, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 4 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)' }} />
-                Live context loaded — {car ? `${car.year || ''} ${car.manufacturer || ''} ${car.model || ''}`.trim() : 'your car'}
-                {market?.count ? ` · ${market.count} market listings` : ''}
-              </div>
-            </div>
-          </div>
-
           {/* Messages area */}
-          <div style={{
-            height: 360, overflowY: 'auto', padding: '18px 18px 8px',
-          }}>
+          <div style={{ height: 340, overflowY: 'auto', padding: '16px 16px 8px' }}>
             <AnimatePresence initial={false}>
               {messages.map((msg, i) => <ChatMessage key={i} msg={msg} />)}
             </AnimatePresence>
@@ -219,15 +175,14 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
                 style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                 <div style={{
                   width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
-                  background: 'linear-gradient(135deg, rgba(124,58,237,0.3), rgba(59,130,246,0.3))',
-                  border: '1px solid rgba(124,58,237,0.4)',
+                  background: '#e0e7ff', border: '1px solid #c7d2fe',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
-                  <Bot size={14} color="#a78bfa" />
+                  <Bot size={14} color="#4f46e5" />
                 </div>
                 <div style={{
                   padding: '10px 14px', borderRadius: '16px 16px 16px 4px',
-                  background: 'var(--surface)', border: '1px solid var(--border)',
+                  background: '#f1f5f9', border: '1px solid var(--border)',
                 }}>
                   <TypingDots />
                 </div>
@@ -238,9 +193,10 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
 
           {/* Suggested questions */}
           <div style={{
-            padding: '8px 14px',
+            padding: '10px 14px',
             borderTop: '1px solid var(--border)',
             display: 'flex', gap: 6, flexWrap: 'wrap',
+            background: '#f8faff',
           }}>
             {SUGGESTED_QUESTIONS.map((q) => (
               <button
@@ -248,17 +204,15 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
                 onClick={() => sendMessage(q.text)}
                 disabled={loading}
                 style={{
-                  fontSize: 11.5, fontWeight: 500,
-                  background: 'rgba(124,58,237,0.08)',
-                  border: '1px solid rgba(124,58,237,0.2)',
-                  color: '#c4b5fd', borderRadius: 20,
-                  padding: '4px 10px', cursor: loading ? 'not-allowed' : 'pointer',
+                  fontSize: 13, fontWeight: 500,
+                  background: '#fff',
+                  border: '1.5px solid #c7d2fe',
+                  color: '#4f46e5', borderRadius: 20,
+                  padding: '6px 12px', cursor: loading ? 'not-allowed' : 'pointer',
                   display: 'flex', alignItems: 'center', gap: 4,
                   transition: 'all 0.15s',
                   opacity: loading ? 0.5 : 1,
                 }}
-                onMouseEnter={e => { if (!loading) e.target.style.background = 'rgba(124,58,237,0.18)' }}
-                onMouseLeave={e => { e.target.style.background = 'rgba(124,58,237,0.08)' }}
               >
                 {q.icon} {q.text}
               </button>
@@ -270,111 +224,97 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
             padding: '12px 14px',
             borderTop: '1px solid var(--border)',
             display: 'flex', gap: 8,
+            background: '#fff',
           }}>
             <input
               ref={inputRef}
               value={input}
               onChange={e => setInput(e.target.value)}
               onKeyDown={handleKey}
-              placeholder="Ask anything about your sale… (Enter to send)"
+              placeholder="שאלו אותי כל דבר על המכירה… (Enter לשליחה)"
               disabled={loading}
               style={{
-                flex: 1, fontSize: 13.5, borderRadius: 10,
-                background: 'var(--bg)', border: '1px solid var(--border)',
-                color: 'var(--text)', padding: '10px 14px',
+                flex: 1, fontSize: 16, borderRadius: 12,
+                background: '#f7f9ff', border: '1.5px solid #c7d2fe',
+                color: '#111827', padding: '12px 14px',
                 outline: 'none',
               }}
             />
             <button
               onClick={() => sendMessage()}
               disabled={loading || !input.trim()}
-              className="btn-primary"
               style={{
-                borderRadius: 10, padding: '10px 14px',
-                display: 'flex', alignItems: 'center', gap: 6, fontSize: 13,
-                opacity: loading || !input.trim() ? 0.5 : 1,
+                background: input.trim() && !loading ? '#1d6ef5' : '#c7d8ff',
+                border: 'none', borderRadius: 12, padding: '12px 16px',
+                display: 'flex', alignItems: 'center', gap: 6, fontSize: 15, fontWeight: 700,
+                color: '#fff', cursor: input.trim() && !loading ? 'pointer' : 'not-allowed',
+                transition: 'all 0.15s',
               }}
             >
-              <Send size={14} /> Send
+              <Send size={16} />
             </button>
           </div>
         </motion.div>
 
         {/* Coming soon features */}
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.25 }}>
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16,
+            display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12,
           }}>
-            <div style={{
-              flex: 1, height: 1, background: 'var(--border)',
-            }} />
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
             <div style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              fontSize: 11, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
-              color: 'var(--yellow)',
-              background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)',
-              padding: '4px 12px', borderRadius: 20,
+              fontSize: 12, fontWeight: 700,
+              color: '#92400e',
+              background: '#fffbeb', border: '1px solid #fcd34d',
+              padding: '4px 14px', borderRadius: 20,
             }}>
-              <Lock size={10} /> Autopilot Mode — Coming Soon
+              <Lock size={11} /> Autopilot — בקרוב
             </div>
             <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 32 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
             {FEATURES.map((f, i) => (
               <motion.div
                 key={f.title}
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.07 }}
-                style={{
-                  background: 'var(--surface)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 14, padding: '16px 18px',
-                  position: 'relative', overflow: 'hidden', opacity: 0.65,
-                }}
+                transition={{ delay: 0.25 + i * 0.06 }}
+                className="card"
+                style={{ opacity: 0.7, display: 'flex', alignItems: 'flex-start', gap: 14 }}
               >
                 <div style={{
-                  position: 'absolute', inset: 0,
-                  background: 'rgba(10,10,11,0.4)', backdropFilter: 'blur(1px)',
-                  borderRadius: 14,
-                }} />
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 8,
-                    background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.2)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <f.icon size={16} color="var(--accent2)" />
-                  </div>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>{f.title}</div>
+                  width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                  background: '#e0e7ff', border: '1px solid #c7d2fe',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <f.icon size={18} color="#4f46e5" />
                 </div>
-                <div style={{ fontSize: 12.5, color: 'var(--muted)', lineHeight: 1.6 }}>{f.desc}</div>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: '#111827', marginBottom: 3 }}>{f.title}</div>
+                  <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>{f.desc}</div>
+                </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
 
         {/* Done + restart */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          style={{ textAlign: 'center' }}
-        >
-          <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 6 }}>🎉 You're all set!</div>
-          <div style={{ color: 'var(--muted)', fontSize: 14, marginBottom: 20 }}>
-            You know your car's history, market position, and ideal asking price.
-            {car?.manufacturer ? ` Good luck selling your ${car.manufacturer}!` : ' Good luck with your sale!'}
+        <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginBottom: 6 }}>🎉 סיימתם!</div>
+          <div style={{ color: 'var(--muted)', fontSize: 15, marginBottom: 20 }}>
+            יש לכם את כל המידע שצריך כדי למכור נכון.
+            {car?.manufacturer ? ` בהצלחה עם ה${car.manufacturer}!` : ' בהצלחה!'}
           </div>
           <button
             onClick={onRestart}
             className="btn-ghost"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '11px 22px', borderRadius: 12 }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, fontSize: 16 }}
           >
-            <RotateCcw size={14} /> Scan another car
+            <RotateCcw size={16} /> סרוק רכב אחר
           </button>
-        </motion.div>
+        </div>
 
       </div>
     </div>

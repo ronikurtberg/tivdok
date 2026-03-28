@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { BarChart3, ArrowRight, Zap, TrendingUp, AlertTriangle, Award } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 
 export default function StepMarketPrompt({ car, onScan, onSkip }) {
   const mfr = car?.manufacturer_en || ''
@@ -10,79 +10,64 @@ export default function StepMarketPrompt({ car, onScan, onSkip }) {
     <div style={{
       minHeight: '100vh',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      padding: '40px 24px 100px',
-      background: 'radial-gradient(ellipse 70% 50% at 50% 30%, rgba(59,130,246,0.07) 0%, transparent 70%), var(--bg)',
+      padding: '32px 20px 80px',
+      background: 'linear-gradient(180deg, #f0f5ff 0%, #fff 300px)',
     }}>
-      <div style={{ maxWidth: 540, width: '100%', textAlign: 'center' }}>
+      <div style={{ maxWidth: 480, width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-        <motion.div initial={{ opacity: 0, y: -14 }} animate={{ opacity: 1, y: 0 }}>
-          <div style={{ fontSize: 52, marginBottom: 14 }}>📡</div>
-          <h1 style={{ fontSize: 34, fontWeight: 900, letterSpacing: -1.2, marginBottom: 10, lineHeight: 1.1 }}>
-            Scan the live market<br />
-            <span style={{ color: 'var(--accent2)' }}>before you price</span>
+        <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }}>
+          <div style={{ fontSize: 64, marginBottom: 12 }}>📊</div>
+          <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: -1, lineHeight: 1.15, color: '#111827', marginBottom: 10 }}>
+            כמה מוכרים אחרים<br />
+            <span style={{ color: '#1d6ef5' }}>מבקשים על {mfr} {mdl}?</span>
           </h1>
-          <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, marginBottom: 24 }}>
-            We'll scrape Yad2 live for {mfr} {mdl} listings and build a full command center —
-            ranked deals, anomalies, price heatmap, and exactly where your car stands.
+          <p style={{ fontSize: 18, color: '#4b5563', lineHeight: 1.6 }}>
+            נסרוק עכשיו מאות מודעות ביד2 ונראה לכם בדיוק
+            כמה שווה הרכב שלכם בשוק — עכשיו, היום.
           </p>
         </motion.div>
 
-        {/* What you'll get */}
+        {/* What you get — simple list */}
         <motion.div
-          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}
-          style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 22, textAlign: 'left' }}
+          initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+          className="card"
+          style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 0 }}
         >
           {[
-            { icon: Award, color: '#10b981', label: 'Best deals flagged', sub: '🔥 listings 15%+ below median' },
-            { icon: AlertTriangle, color: '#f59e0b', label: 'Overpriced cars', sub: 'Dealer vs private gap' },
-            { icon: TrendingUp, color: '#3b82f6', label: 'Your price ranked', sub: 'Where you sit vs market' },
-            { icon: Zap, color: '#a78bfa', label: 'Mileage anomalies', sub: 'Cars with unusual km' },
-          ].map(({ icon: Icon, color, label, sub }) => (
-            <div key={label} style={{
-              background: 'var(--surface)', border: '1px solid var(--border)',
-              borderRadius: 12, padding: '11px 13px', display: 'flex', alignItems: 'flex-start', gap: 9,
+            { e: '💰', t: 'מחיר חציוני של השוק' },
+            { e: '🔥', t: 'המודעות הכי משתלמות' },
+            { e: '📍', t: 'איפה הרכב שלכם עומד' },
+            { e: '⚠️', t: 'רכבים חשודים או יקרים מדי' },
+          ].map(({ e, t }, i, arr) => (
+            <div key={t} style={{
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '13px 0',
+              borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
             }}>
-              <Icon size={15} color={color} style={{ marginTop: 1, flexShrink: 0 }} />
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 12 }}>{label}</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 1 }}>{sub}</div>
-              </div>
+              <span style={{ fontSize: 24, flexShrink: 0 }}>{e}</span>
+              <span style={{ fontSize: 17, fontWeight: 600, color: '#111827' }}>{t}</span>
             </div>
           ))}
         </motion.div>
 
-        {/* Search params pill */}
-        <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.15 }}
-          style={{
-            background: 'rgba(59,130,246,0.07)', border: '1px solid rgba(59,130,246,0.2)',
-            borderRadius: 10, padding: '8px 14px', marginBottom: 20,
-            fontSize: 12, color: 'var(--muted)', display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap',
-          }}
-        >
-          <span>🚗 {mfr} {mdl}</span>
-          {car?.year && <span>📅 {car.year - 1}–{Number(car.year) + 1}</span>}
-          {car?.km && <span>🛣️ up to {Math.round(car.km * 1.4 / 1000)}k km</span>}
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }}
           style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <motion.button
             className="btn-primary"
             onClick={onScan}
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
-            style={{ width: '100%', padding: 15, fontSize: 15, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 4px 24px rgba(59,130,246,0.3)' }}
+            whileTap={{ scale: 0.97 }}
+            style={{ width: '100%', padding: '18px', fontSize: 19, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
           >
-            <BarChart3 size={17} /> Launch Market Command Center <ArrowRight size={15} />
+            בדוק את השוק עכשיו <ArrowRight size={18} />
           </motion.button>
           <button onClick={onSkip} className="btn-ghost"
-            style={{ width: '100%', padding: 12, fontSize: 13, borderRadius: 12 }}>
-            Skip — go straight to price estimate
+            style={{ width: '100%', padding: '14px', fontSize: 16, borderRadius: 14 }}>
+            דלג — אני יודע את המחיר
           </button>
         </motion.div>
 
-        <div style={{ marginTop: 14, fontSize: 11, color: 'var(--muted2)' }}>
-          ⚡ Live Yad2 data · typically 30–150 listings · ~10 seconds
+        <div style={{ fontSize: 13, color: '#9ca3af' }}>
+          ⚡ סורק יד2 בזמן אמת · בדרך כלל 10–30 שניות
         </div>
       </div>
     </div>

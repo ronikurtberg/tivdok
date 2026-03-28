@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, ExternalLink, RefreshCw, TrendingUp, AlertTriangle, Users, Zap, Target } from 'lucide-react'
+import { ArrowRight, ExternalLink, RefreshCw, TrendingUp, AlertTriangle, Users, Zap, Target, ChevronDown, ChevronUp } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
 import axios from 'axios'
 
@@ -392,235 +392,197 @@ export default function StepMarket({ car, onDone }) {
   const yourPrice = car?.asking_price ? Number(car.asking_price) : null
   const yourVsMedian = yourPrice && median ? ((yourPrice - median) / median * 100).toFixed(1) : null
 
-  return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'radial-gradient(ellipse 70% 45% at 50% 0%, rgba(59,130,246,0.07) 0%, transparent 60%), var(--bg)',
-      padding: '36px 20px 100px',
-    }}>
-      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+  const [chartsOpen, setChartsOpen] = useState(false)
 
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
-          <div>
-            <div style={{ fontSize: 12, color: 'var(--accent2)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-              Market Command Center
-            </div>
-            <h1 style={{ fontSize: 32, fontWeight: 900, letterSpacing: -1, marginBottom: 4 }}>
-              {status === 'done' ? `${m?.count ?? 0} listings analyzed` : 'Scanning Yad2…'}
-            </h1>
-            <p style={{ color: 'var(--muted)', fontSize: 14 }}>
-              {car?.manufacturer_en} {car?.model_en || car?.commercial_name} · live data
-            </p>
+  return (
+    <div style={{ minHeight: '100vh', background: '#f0f5ff', padding: '0 0 100px' }}>
+
+      {/* Top bar */}
+      <div style={{
+        background: '#fff', padding: '14px 20px',
+        borderBottom: '1px solid var(--border)',
+        position: 'sticky', top: 0, zIndex: 10,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 20, color: '#111827' }}>📊 סריקת שוק</div>
+          <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 2 }}>
+            {car?.manufacturer_en} {car?.model_en || car?.commercial_name} · יד2 חי
           </div>
-          {status === 'done' && (
-            <button onClick={rescan} className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, padding: '7px 14px' }}>
-              <RefreshCw size={12} /> Rescan
-            </button>
-          )}
-        </motion.div>
+        </div>
+        {status === 'done' && (
+          <button onClick={rescan} className="btn-ghost" style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 14, padding: '8px 14px' }}>
+            <RefreshCw size={14} /> סרוק שוב
+          </button>
+        )}
+      </div>
+
+      <div style={{ padding: '16px 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
         {/* Loading */}
         {status === 'loading' && (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, padding: '80px 0' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, padding: '60px 0' }}>
             <div style={{ position: 'relative' }}>
               <div className="spinner" style={{ width: 52, height: 52, borderWidth: 3 }} />
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 }}>📊</div>
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>📊</div>
             </div>
-            <div style={{ color: 'var(--muted)', fontSize: 15 }}>{progress}</div>
-            <div style={{ fontSize: 12, color: 'var(--muted2)', maxWidth: 300, textAlign: 'center' }}>Scraping live data · 5–15 seconds</div>
+            <div style={{ color: 'var(--muted)', fontSize: 17, fontWeight: 600 }}>{progress}</div>
+            <div style={{ fontSize: 14, color: 'var(--muted2)', textAlign: 'center' }}>סורק נתונים חיים · 5–15 שניות</div>
           </div>
         )}
 
         {/* Error */}
         {status === 'error' && (
-          <div style={{ padding: '24px', borderRadius: 14, background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.3)', color: 'var(--red)', fontSize: 15, textAlign: 'center' }}>
-            <div style={{ fontSize: 28, marginBottom: 10 }}>⚠️</div>
-            {error}
-            <div style={{ marginTop: 14 }}>
-              <button className="btn-primary" onClick={() => onDone(null)}>Continue without market data →</button>
-            </div>
+          <div className="card" style={{ textAlign: 'center', padding: '32px 20px' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>⚠️</div>
+            <div style={{ fontSize: 16, color: 'var(--red)', marginBottom: 16 }}>{error}</div>
+            <button className="btn-primary" onClick={() => onDone(null)} style={{ fontSize: 16, padding: '14px 24px' }}>
+              המשך ללא נתוני שוק ←
+            </button>
           </div>
         )}
 
         {status === 'done' && result && (
-          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-            {/* ── Trim context banner ── */}
-            {(() => {
-              const subModel = car?.sub_model || car?.trim
-              if (!subModel) return null
-              const trimListings = classified.filter(l => l.sub_model && l.sub_model.toUpperCase().includes(subModel.toUpperCase().split(/[\s\-/]/)[0]))
-              const trimCount = trimListings.length
-              return (
-                <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.05 }}
-                  style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 12, padding: '10px 16px', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: 16 }}>🏷️</span>
-                  <div style={{ flex: 1 }}>
-                    <span style={{ fontWeight: 700, fontSize: 13, color: '#a5b4fc' }}>Trim-aware pricing: </span>
-                    <span style={{ fontSize: 13, color: 'var(--muted)' }}>
-                      Median is weighted toward <strong style={{ color: '#fff' }}>{subModel}</strong> listings
-                      {trimCount > 0 ? ` · ${trimCount} exact trim match${trimCount !== 1 ? 'es' : ''} found` : ' · comparing all trims (no exact matches)'}
-                    </span>
-                  </div>
-                  {trimCount > 0 && (
-                    <button onClick={() => setFilter('trim')} style={{
-                      fontSize: 11, fontWeight: 700, borderRadius: 20, padding: '3px 12px', cursor: 'pointer', border: 'none',
-                      background: filter === 'trim' ? 'rgba(99,102,241,0.35)' : 'rgba(99,102,241,0.15)',
-                      color: '#a5b4fc',
-                    }}>
-                      {filter === 'trim' ? '✓ Filtered' : 'Show only'}
-                    </button>
-                  )}
-                </motion.div>
-              )
-            })()}
-
-            {/* ── Row 1: Key intel stats ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10, marginBottom: 16 }}>
-              <IntelCard icon={Target} label="Median price" value={fmt(Math.round(median || 0))} sub="50th percentile" color="var(--accent2)" bg="rgba(59,130,246,0.07)" border="rgba(59,130,246,0.25)" />
-              <IntelCard icon={TrendingUp} label="Avg price" value={fmt(Math.round(m?.avg_price || 0))} sub={`${m?.count} listings`} />
-              <IntelCard icon={Zap} label="Best deal" value={fmt(cheapest?.price)} sub={cheapest ? `${cheapest.km?.toLocaleString()} km` : ''} color="#10b981" bg="rgba(16,185,129,0.07)" border="rgba(16,185,129,0.25)" />
-              <IntelCard icon={AlertTriangle} label="Highest ask" value={fmt(priciest?.price)} sub={priciest ? `${priciest.km?.toLocaleString()} km` : ''} color="#f59e0b" bg="rgba(245,158,11,0.07)" border="rgba(245,158,11,0.25)" />
-              <IntelCard icon={Users} label="Private / Dealer" value={`${m?.private_count ?? 0} / ${m?.agent_count ?? 0}`} sub={`Private avg ${fmtK(Math.round(privateAvg || 0))}`} />
+            {/* ── Key stats: 2x2 grid ── */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>מחיר חציון</div>
+                <div style={{ fontSize: 26, fontWeight: 900, color: '#1d6ef5' }}>{fmt(Math.round(median || 0))}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted2)' }}>{m?.count} מודעות</div>
+              </div>
+              <div className="card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>עסקה הכי טובה</div>
+                <div style={{ fontSize: 26, fontWeight: 900, color: '#16a34a' }}>{fmt(cheapest?.price)}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted2)' }}>{cheapest?.km?.toLocaleString()} ק"מ</div>
+              </div>
+              <div className="card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>הכי יקר</div>
+                <div style={{ fontSize: 26, fontWeight: 900, color: '#d97706' }}>{fmt(priciest?.price)}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted2)' }}>{priciest?.km?.toLocaleString()} ק"מ</div>
+              </div>
+              <div className="card" style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600, marginBottom: 4 }}>פרטי / סוכן</div>
+                <div style={{ fontSize: 26, fontWeight: 900, color: '#111827' }}>{m?.private_count ?? 0} / {m?.agent_count ?? 0}</div>
+                <div style={{ fontSize: 12, color: 'var(--muted2)' }}>ממוצע פרטי {fmtK(Math.round(privateAvg || 0))}</div>
+              </div>
             </div>
 
-            {/* ── Row 2: Your position ── */}
+            {/* ── Your price position ── */}
             {yourPrice && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                className="card"
                 style={{
-                  background: Number(yourVsMedian) > 10 ? 'rgba(245,158,11,0.08)' : Number(yourVsMedian) < -10 ? 'rgba(16,185,129,0.08)' : 'rgba(59,130,246,0.07)',
-                  border: `1px solid ${Number(yourVsMedian) > 10 ? 'rgba(245,158,11,0.3)' : Number(yourVsMedian) < -10 ? 'rgba(16,185,129,0.3)' : 'rgba(59,130,246,0.25)'}`,
-                  borderRadius: 12, padding: '12px 16px', marginBottom: 16,
-                  display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap',
+                  background: Number(yourVsMedian) > 10 ? '#fffbeb' : Number(yourVsMedian) < -10 ? 'rgba(22,163,74,0.05)' : '#eff6ff',
+                  border: `1.5px solid ${Number(yourVsMedian) > 10 ? '#fcd34d' : Number(yourVsMedian) < -10 ? 'rgba(22,163,74,0.3)' : '#bfdbfe'}`,
                 }}
               >
-                <span style={{ fontSize: 20 }}>
-                  {Number(yourVsMedian) > 10 ? '⚠️' : Number(yourVsMedian) < -5 ? '✅' : '🎯'}
-                </span>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 700, fontSize: 14 }}>
-                    Your asking price {fmt(yourPrice)} is{' '}
-                    <span style={{ color: Number(yourVsMedian) > 0 ? '#f59e0b' : '#10b981' }}>
-                      {Number(yourVsMedian) > 0 ? `+${yourVsMedian}%` : `${yourVsMedian}%`} vs market median
-                    </span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 16, color: '#111827', marginBottom: 4 }}>
+                      {Number(yourVsMedian) > 10 ? '⚠️' : Number(yourVsMedian) < -5 ? '✅' : '🎯'}{' '}
+                      המחיר שלך {fmt(yourPrice)}
+                    </div>
+                    <div style={{ fontSize: 15, color: Number(yourVsMedian) > 0 ? '#d97706' : '#16a34a', fontWeight: 700 }}>
+                      {Number(yourVsMedian) > 0 ? `+${yourVsMedian}%` : `${yourVsMedian}%`} מהחציון
+                    </div>
+                    <div style={{ fontSize: 14, color: 'var(--muted)', marginTop: 4 }}>
+                      {Number(yourVsMedian) > 15 ? 'ייתכן שאתם יקרים מדי — שקלו להוריד 5–10%.' :
+                       Number(yourVsMedian) > 5 ? 'מעט מעל החציון — סביר אם הרכב במצב טוב.' :
+                       Number(yourVsMedian) < -10 ? 'מתחת לשוק — אפשר לבקש יותר.' :
+                       'ממוקמים היטב — מחיר תחרותי.'}
+                    </div>
                   </div>
-                  <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-                    {Number(yourVsMedian) > 15 ? 'You may be overpriced — consider a 5–10% reduction to attract more buyers.' :
-                     Number(yourVsMedian) > 5 ? 'Slightly above median. Reasonable if condition is good.' :
-                     Number(yourVsMedian) < -10 ? 'Below market — you could ask more. Make sure you\'re not leaving money on the table.' :
-                     'Right in the sweet spot — you\'re priced competitively.'}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Market rank</div>
-                  <div style={{ fontWeight: 800, fontSize: 18 }}>
-                    #{priced.filter(l => l.price < yourPrice).length + 1} / {priced.length}
+                  <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                    <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 2 }}>דירוג שוק</div>
+                    <div style={{ fontWeight: 900, fontSize: 22, color: '#111827' }}>
+                      #{priced.filter(l => l.price < yourPrice).length + 1} / {priced.length}
+                    </div>
                   </div>
                 </div>
               </motion.div>
             )}
 
-            {/* ── Row 3: Charts ── */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 16 }}>
-              <div className="card" style={{ padding: '16px 18px' }}>
-                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>Price distribution</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 12 }}>
-                  <span style={{ color: '#3b82f6' }}>■</span> Median &nbsp;
-                  {yourPrice && <><span style={{ color: '#f59e0b' }}>■</span> Your price</>}
-                </div>
-                <PriceHistogram listings={allListings} median={median} yourPrice={yourPrice} height={240} />
-              </div>
-              <div className="card" style={{ padding: '16px 18px' }}>
-                <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>Price vs km map</div>
-                <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
-                  Hover any dot · {yourPrice ? '★ = your car · ' : ''}colored by rating
-                </div>
-                <QuadrantGrid
-                  listings={allListings}
-                  classified={classified}
-                  yourKm={car?.km ? Number(car.km) : null}
-                  yourPrice={yourPrice}
-                  median={median}
-                  avgKm={avgKm}
-                />
-              </div>
-            </div>
-
-            {/* ── Row 4: Class breakdown bar ── */}
-            <div className="card" style={{ padding: '14px 18px', marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 12 }}>Market composition</div>
-              <div style={{ display: 'flex', height: 24, borderRadius: 6, overflow: 'hidden', marginBottom: 10, gap: 1 }}>
-                {Object.entries(CLASS_META).map(([cls, meta]) => {
-                  const cnt = classified.filter(l => l._class === cls).length
-                  const w = pct(cnt, classified.length)
-                  if (!w) return null
-                  return (
-                    <div key={cls} title={`${meta.label}: ${cnt} (${w}%)`}
-                      style={{ width: `${w}%`, background: meta.color + 'bb', transition: 'width 0.5s' }} />
-                  )
-                })}
-              </div>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                {Object.entries(CLASS_META).map(([cls, meta]) => {
-                  const cnt = classified.filter(l => l._class === cls).length
-                  if (!cnt) return null
-                  return (
-                    <button key={cls} onClick={() => setFilter(filter === cls ? 'all' : cls)} style={{
-                      background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-                      display: 'flex', alignItems: 'center', gap: 5,
-                      opacity: filter !== 'all' && filter !== cls ? 0.4 : 1,
-                    }}>
-                      <div style={{ width: 10, height: 10, borderRadius: 2, background: meta.color }} />
-                      <span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: filter === cls ? 700 : 400 }}>
-                        {meta.label} <strong style={{ color: '#fff' }}>{cnt}</strong>
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            {/* ── Row 5: Intel insights ── */}
+            {/* ── Intel insights ── */}
             {insights.length > 0 && (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 16 }}>
-                {insights.map((ins, i) => <AnomalyCard key={i} {...ins} />)}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {insights.map((ins, i) => (
+                  <div key={i} className="card" style={{ display: 'flex', alignItems: 'flex-start', gap: 12, background: ins.bg, border: `1.5px solid ${ins.border}` }}>
+                    <span style={{ fontSize: 24, flexShrink: 0 }}>{ins.icon}</span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: ins.color, marginBottom: 3 }}>{ins.title}</div>
+                      <div style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.5 }}>{ins.desc}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            {/* ── Row 6: Listings grid ── */}
-            <div className="card" style={{ padding: '16px 18px', marginBottom: 20 }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
-                <div style={{ fontWeight: 700, fontSize: 15 }}>
-                  {filter === 'all' ? `All ${classified.length} listings` : `${filtered.length} ${CLASS_META[filter]?.label || filter} listings`}
-                </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-                  {/* Filter chips */}
-                  <div style={{ display: 'flex', gap: 4 }}>
-                    {[['all', 'All'], ['private', '👤 Private'], ['dealer', '🏢 Dealer']].map(([v, lbl]) => (
-                      <button key={v} onClick={() => setFilter(v)} style={{
-                        fontSize: 11, fontWeight: 600, borderRadius: 20, padding: '3px 10px', cursor: 'pointer', border: 'none',
-                        background: filter === v ? 'rgba(59,130,246,0.2)' : 'var(--surface2)',
-                        color: filter === v ? 'var(--accent2)' : 'var(--muted)',
-                        outline: filter === v ? '1px solid rgba(59,130,246,0.4)' : 'none',
-                      }}>{lbl}</button>
-                    ))}
+            {/* ── Collapsible charts ── */}
+            <button className="collapse-header" onClick={() => setChartsOpen(v => !v)}>
+              <span>📈 גרפים ומפת מחירים</span>
+              {chartsOpen ? <ChevronUp size={20} color="var(--muted)" /> : <ChevronDown size={20} color="var(--muted)" />}
+            </button>
+            <AnimatePresence>
+              {chartsOpen && (
+                <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} style={{ overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 2 }}>
+                    <div className="card">
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: '#111827' }}>התפלגות מחירים</div>
+                      <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 12 }}>
+                        <span style={{ color: '#3b82f6' }}>■</span> חציון &nbsp;
+                        {yourPrice && <><span style={{ color: '#f59e0b' }}>■</span> המחיר שלך</>}
+                      </div>
+                      <PriceHistogram listings={allListings} median={median} yourPrice={yourPrice} height={200} />
+                    </div>
+                    <div className="card">
+                      <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 4, color: '#111827' }}>מחיר מול ק"מ</div>
+                      <div style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+                        {yourPrice ? '★ = הרכב שלכם · ' : ''}צבע לפי דירוג
+                      </div>
+                      <QuadrantGrid
+                        listings={allListings}
+                        classified={classified}
+                        yourKm={car?.km ? Number(car.km) : null}
+                        yourPrice={yourPrice}
+                        median={median}
+                        avgKm={avgKm}
+                      />
+                    </div>
                   </div>
-                  {/* Sort */}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* ── Listings ── */}
+            <div className="card" style={{ padding: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, gap: 8, flexWrap: 'wrap' }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: '#111827' }}>
+                  {filter === 'all' ? `כל ${classified.length} המודעות` : `${filtered.length} מודעות`}
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                  {[['all', 'הכל'], ['private', '👤 פרטי'], ['dealer', '🏢 סוכן']].map(([v, lbl]) => (
+                    <button key={v} onClick={() => setFilter(v)} style={{
+                      fontSize: 13, fontWeight: 600, borderRadius: 20, padding: '5px 12px', cursor: 'pointer', border: 'none',
+                      background: filter === v ? '#1d6ef5' : '#f1f5f9',
+                      color: filter === v ? '#fff' : 'var(--muted)',
+                    }}>{lbl}</button>
+                  ))}
                   <select value={sort} onChange={e => setSort(e.target.value)} style={{
-                    fontSize: 11, background: 'var(--surface2)', border: '1px solid var(--border)',
-                    color: 'var(--muted)', borderRadius: 8, padding: '4px 8px', cursor: 'pointer',
+                    fontSize: 13, background: '#f1f5f9', border: '1px solid var(--border)',
+                    color: '#111827', borderRadius: 10, padding: '6px 10px', cursor: 'pointer',
                   }}>
-                    <option value="price-asc">Price ↑</option>
-                    <option value="price-desc">Price ↓</option>
-                    <option value="km-asc">km ↑</option>
-                    <option value="km-desc">km ↓</option>
+                    <option value="price-asc">מחיר ↑</option>
+                    <option value="price-desc">מחיר ↓</option>
+                    <option value="km-asc">ק"מ ↑</option>
+                    <option value="km-desc">ק"מ ↓</option>
                   </select>
                 </div>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <AnimatePresence mode="popLayout">
                   {visible.map((l, i) => (
                     <ListingRow key={l.listing_id || i} l={l} rank={i} classified={l._class} median={median} />
@@ -630,8 +592,8 @@ export default function StepMarket({ car, onDone }) {
 
               {filtered.length > 12 && (
                 <button onClick={() => setShowAll(v => !v)} className="btn-ghost"
-                  style={{ width: '100%', marginTop: 10, fontSize: 13 }}>
-                  {showAll ? 'Show less' : `Show all ${filtered.length} listings`}
+                  style={{ width: '100%', marginTop: 12, fontSize: 15, padding: '12px' }}>
+                  {showAll ? 'הצג פחות' : `הצג את כל ${filtered.length} המודעות`}
                 </button>
               )}
             </div>
@@ -640,15 +602,15 @@ export default function StepMarket({ car, onDone }) {
             <motion.button
               className="btn-primary"
               onClick={() => onDone(result)}
-              whileHover={{ scale: 1.015 }}
-              whileTap={{ scale: 0.98 }}
-              style={{ width: '100%', padding: 15, fontSize: 15, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, boxShadow: '0 4px 24px rgba(59,130,246,0.3)' }}
+              whileTap={{ scale: 0.97 }}
+              style={{ width: '100%', padding: '18px', fontSize: 19, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}
             >
-              Calculate my ideal selling price <ArrowRight size={15} />
+              חשבו לי את המחיר האידיאלי <ArrowRight size={18} />
             </motion.button>
 
           </motion.div>
         )}
+
       </div>
     </div>
   )
