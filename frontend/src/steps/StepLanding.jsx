@@ -5,8 +5,32 @@ import axios from 'axios'
 
 const HOW_IT_WORKS = [
   { icon: '🔍', title: 'הכניסו מספר רכב', sub: 'פשוט כמו גוגל' },
-  { icon: '📊', title: 'מקבלים ניתוח שוק', sub: 'ממודעות אמיתיות ביד2' },
-  { icon: '💰', title: 'יודעים מה לבקש', sub: 'מחיר הוגן ומנצח' },
+  { icon: '🧹', title: 'מסננים את הזבל', sub: 'רק מודעות עם מחיר וק"מ' },
+  { icon: '📊', title: 'ניתוח שוק אמיתי', sub: 'רכבים דומים לשלכם בלבד' },
+  { icon: '💰', title: 'מחיר מבוסס נתונים', sub: 'הצעה שקופה — לא השערה' },
+]
+
+const TRUST_POINTS = [
+  {
+    icon: '🧹',
+    title: 'מסננים מודעות לא רלוונטיות',
+    desc: 'מודעות ללא מחיר, ללא ק"מ, או חריגות קיצוניות — מוסרות אוטומטית. רק נתונים נקיים.',
+  },
+  {
+    icon: '🔍',
+    title: 'רואים את המתחרים האמיתיים',
+    desc: 'תוכלו לראות את כל המודעות שבהן השתמשנו — איזה רכב, באיזה מחיר, ממי. שקיפות מלאה.',
+  },
+  {
+    icon: '💡',
+    title: 'המחיר הוא הצעה — לא חוק',
+    desc: 'מסבירים כל החלטה. מה ממוצע השוק, איפה הרכב שלכם ממוקם, ולמה המחיר המוצע הגיוני.',
+  },
+  {
+    icon: '🤖',
+    title: 'AI שמכיר את הרכב שלכם — לא ChatGPT גנרי',
+    desc: 'היועץ שלנו טוען את כל הנתונים: מחיר השוק, הק"מ שלכם, ההיסטוריה, המתחרים. שאלו כל שאלה — תקבלו תשובה על הרכב שלכם, לא תשובה כללית.',
+  },
 ]
 
 export default function StepLanding({ onFound }) {
@@ -119,8 +143,8 @@ export default function StepLanding({ onFound }) {
         </h1>
 
         <p style={{ fontSize: 20, color: '#4b5563', lineHeight: 1.6, marginBottom: 0 }}>
-          הכניסו מספר רכב — נסרוק מאות מודעות ביד2 בזמן אמת
-          ונגיד לכם בדיוק מה לבקש.
+          סורקים מאות מודעות ביד2, מסננים את הזבל,
+          ומגיעים למחיר שמבוסס על נתונים אמיתיים — לא תחושה.
         </p>
       </motion.div>
 
@@ -328,30 +352,54 @@ export default function StepLanding({ onFound }) {
         initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.35 }}
-        style={{ width: '100%', maxWidth: 560, marginBottom: 44 }}
+        style={{ width: '100%', maxWidth: 520, marginBottom: 32 }}
       >
         <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 18 }}>
           איך זה עובד
         </div>
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
           {HOW_IT_WORKS.map(({ icon, title, sub }, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+            <div key={i} style={{ display: 'flex', alignItems: 'center' }}>
               <div style={{
-                background: '#fff',
-                border: '1.5px solid #dde8ff',
-                borderRadius: 16,
-                padding: '16px 20px',
-                textAlign: 'center',
-                minWidth: 140,
-                boxShadow: '0 2px 8px rgba(29,110,245,0.06)',
+                background: '#fff', border: '1.5px solid #dde8ff',
+                borderRadius: 14, padding: '12px 14px', textAlign: 'center',
+                minWidth: 110, boxShadow: '0 2px 8px rgba(29,110,245,0.06)',
               }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 3 }}>{title}</div>
-                <div style={{ fontSize: 13, color: '#6b7280' }}>{sub}</div>
+                <div style={{ fontSize: 24, marginBottom: 6 }}>{icon}</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#111827', marginBottom: 2 }}>{title}</div>
+                <div style={{ fontSize: 12, color: '#6b7280' }}>{sub}</div>
               </div>
               {i < HOW_IT_WORKS.length - 1 && (
-                <div style={{ fontSize: 20, color: '#c7d8ff', padding: '0 4px' }}>›</div>
+                <div style={{ fontSize: 18, color: '#c7d8ff', padding: '0 2px' }}>›</div>
               )}
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* ── Trust / value props ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: 0.5 }}
+        style={{ width: '100%', maxWidth: 520, marginBottom: 40 }}
+      >
+        <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 16 }}>
+          למה לסמוך עלינו
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {TRUST_POINTS.map(({ icon, title, desc }) => (
+            <div key={title} style={{
+              display: 'flex', alignItems: 'flex-start', gap: 14,
+              background: '#fff', border: '1.5px solid #e0e8ff',
+              borderRadius: 16, padding: '16px 18px',
+              boxShadow: '0 2px 8px rgba(29,110,245,0.05)',
+            }}>
+              <span style={{ fontSize: 26, flexShrink: 0, marginTop: 1 }}>{icon}</span>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#111827', marginBottom: 3 }}>{title}</div>
+                <div style={{ fontSize: 14, color: '#6b7280', lineHeight: 1.55 }}>{desc}</div>
+              </div>
             </div>
           ))}
         </div>

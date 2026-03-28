@@ -31,21 +31,25 @@ export default function StepMarketPrompt({ car, onScan, onSkip }) {
         <motion.div
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           className="card"
-          style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: 0 }}
+          style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: 0 }}
         >
           {[
-            { e: '💰', t: 'מחיר חציוני של השוק' },
-            { e: '🔥', t: 'המודעות הכי משתלמות' },
-            { e: '📍', t: 'איפה הרכב שלכם עומד' },
-            { e: '⚠️', t: 'רכבים חשודים או יקרים מדי' },
-          ].map(({ e, t }, i, arr) => (
+            { e: '🧹', t: 'מסננים מודעות ללא מחיר, ללא ק"מ, ועם סטיות קיצוניות', sub: 'רק נתונים שניתן לסמוך עליהם' },
+            { e: '🔍', t: 'רואים את כל הרכבים שהשתמשנו בהם', sub: 'מחיר, ק"מ, פרטי — שקיפות מלאה' },
+            { e: '📍', t: 'איפה הרכב שלכם עומד בשוק', sub: 'לא ממוצע גנרי — רכבים דומים לשלכם' },
+            { e: '💡', t: 'המחיר המוצע מוסבר — לא מופיע סתם', sub: 'כל החלטה מנומקת' },
+            { e: '🤖', t: 'AI שמכיר את הנתונים שלכם', sub: 'שאלו כל שאלה — תקבלו תשובה ספציפית' },
+          ].map(({ e, t, sub }, i, arr) => (
             <div key={t} style={{
-              display: 'flex', alignItems: 'center', gap: 12,
-              padding: '13px 0',
+              display: 'flex', alignItems: 'flex-start', gap: 12,
+              padding: '12px 0',
               borderBottom: i < arr.length - 1 ? '1px solid var(--border)' : 'none',
             }}>
-              <span style={{ fontSize: 24, flexShrink: 0 }}>{e}</span>
-              <span style={{ fontSize: 17, fontWeight: 600, color: '#111827' }}>{t}</span>
+              <span style={{ fontSize: 22, flexShrink: 0, marginTop: 1 }}>{e}</span>
+              <div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#111827' }}>{t}</div>
+                <div style={{ fontSize: 13, color: '#6b7280', marginTop: 1 }}>{sub}</div>
+              </div>
             </div>
           ))}
         </motion.div>
