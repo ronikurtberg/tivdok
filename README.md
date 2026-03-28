@@ -1,16 +1,16 @@
-# 🚗 Car Seller Assistant — Israel
+# 🚗 Tivdok | תבדוק — מכור את הרכב שלך במחיר הנכון
 
-A full-stack web app that helps you sell your car in Israel the smart way.
+**תבדוק** זה הכלי הכי פשוט למכירת רכב בישראל. אתם מכניסים מספר רכב — ואנחנו עושים את כל השאר.
 
-Enter a license plate → get official car data → check vehicle history → scan the live market on Yad2 → receive a calculated ideal selling price.
+הכניסו מספר רכב ← מקבלים נתוני רישוי רשמיים ← בדיקת היסטוריה ← סריקת יד2 בזמן אמת ← מחיר מכירה מדויק.
 
 ---
 
-## How to Run
+## איך מריצים את הפרויקט
 
-You need two terminals.
+צריך שני טרמינלים.
 
-### 1. Install dependencies (first time only)
+### 1. התקנת תלויות (פעם ראשונה בלבד)
 
 ```bash
 cd ~/work/car-seller-assistant
@@ -20,54 +20,54 @@ cd frontend
 npm install                  # React frontend deps
 ```
 
-### 2. Start the backend (FastAPI)
+### 2. הפעלת ה-Backend (FastAPI)
 
 ```bash
 cd ~/work/car-seller-assistant
 .venv/bin/python -m uvicorn car_seller.api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 3. Start the frontend (React + Vite)
+### 3. הפעלת ה-Frontend (React + Vite)
 
 ```bash
 cd ~/work/car-seller-assistant/frontend
 npm run dev
 ```
 
-Then open **http://localhost:5173** in your browser.
+פתחו **http://localhost:5173** בדפדפן.
 
-> The frontend dev server proxies all `/api` requests to the backend on port 8000 automatically.
+> ה-Frontend מעביר אוטומטית את כל קריאות ה-`/api` ל-Backend בפורט 8000.
 
-### Optional: OpenAI for richer selling plans
+### אופציונלי: OpenAI לתוכניות מכירה חכמות יותר
 
 ```bash
 cp .env.example .env
 # Add OPENAI_API_KEY=sk-... to .env
 ```
 
-Without it, a fully rule-based selling plan is generated — still useful.
+בלי זה, המערכת מייצרת תוכנית מכירה על פי חוקים — עדיין שימושית מאוד.
 
 ---
 
-## App Flow (8 steps)
+## זרימת האפליקציה (8 שלבים)
 
-| Step | What happens |
-|------|-------------|
-| **1. Plate entry** | Type any Israeli license plate number |
-| **2. Identify** | Official car data pulled from the Ministry of Transport. 3D interactive car model shown. |
-| **3. Confirm** | Review and correct any fields. Add your current mileage and asking price. |
-| **4. Market prompt** | Choose whether to scan Yad2 for comparable listings |
-| **5. History** | Annual road test records, odometer consistency check |
-| **6. Market scan** | Live Yad2 scrape — price distribution chart + all listings |
-| **7. Price** | Three options: Quick Sale / Fair Market / Premium Ask — with reasons |
-| **8. Autopilot** | Vision for future AI-agent auto-selling mode |
+| שלב | מה קורה |
+|-----|----------|
+| **1. מספר רכב** | מכניסים מספר רישוי ישראלי |
+| **2. זיהוי** | נתוני רכב רשמיים ממשרד התחבורה. מודל תלת-ממד אינטראקטיבי. |
+| **3. אישור** | סקירה ותיקון פרטים. הוספת ק"מ ומחיר מבוקש. |
+| **4. שוק** | בחירה אם לסרוק מודעות יד2 |
+| **5. היסטוריה** | רישומי טסט שנתיים, בדיקת עקביות קילומטראז' |
+| **6. סריקת שוק** | סריקה חיה של יד2 — גרף מחירים + כל המודעות |
+| **7. מחיר** | שלוש אפשרויות: מכירה מהירה / שוויון שוק / מחיר פרמיום |
+| **8. יועץ AI** | צ'אט חכם עם כל ההקשר של הרכב שלכם |
 
 ---
 
-## Project Structure
+## מבנה הפרויקט
 
 ```
-car-seller-assistant/
+tivdok/
 ├── car_seller/
 │   ├── api.py             # FastAPI app — all REST endpoints
 │   ├── plate_lookup.py    # License plate → car info (data.gov.il)
@@ -92,7 +92,7 @@ car-seller-assistant/
 
 ---
 
-## API Endpoints
+## נקודות API
 
 | Method | Path | Description |
 |--------|------|-------------|
@@ -105,28 +105,32 @@ car-seller-assistant/
 
 ---
 
-## Data Sources
+## מקורות מידע
 
-| Source | What it provides | Cost |
-|--------|-----------------|------|
-| `data.gov.il` (Ministry of Transport) | Vehicle registry, VIN, trim, test dates, license expiry, tire sizes | Free |
-| `data.gov.il` (road tests resource) | Annual test history, mileage at each test | Free |
-| `gw.yad2.co.il` | Live market listings, prices, mileage | Free (direct API) |
-| `data.gov.il` (vehicle catalog) | Official Ministry catalog price | Free |
-| OpenAI GPT-4o-mini | Richer selling plan text | Optional, paid |
+| מקור | מה הוא מספק | עלות |
+|------|-------------|------|
+| `data.gov.il` (משרד התחבורה) | נתוני רכב, VIN, גרסה, תאריכי טסט, מידות צמיגים | חינם |
+| `data.gov.il` (טסטים שנתיים) | היסטוריית טסטים, קילומטראז' בכל טסט | חינם |
+| `gw.yad2.co.il` | מודעות שוק חיות, מחירים, ק"מ | חינם (API ישיר) |
+| `data.gov.il` (קטלוג רכב) | מחיר קטלוג רשמי של משרד התחבורה | חינם |
+| OpenAI GPT-4o-mini | תוכניות מכירה עשירות יותר | אופציונלי, בתשלום |
 
-> **Note:** Accident history and insurance claims are not available via any free public Israeli API.
-> Owner name/address is protected by law.
+> **שימו לב:** היסטוריית תאונות ותביעות ביטוח אינה זמינה ב-API ציבורי חופשי בישראל.
+> שם בעל הרכב מוגן על פי חוק.
 
 ---
 
-## Legacy CLI
+## CLI (ממשק שורת פקודה)
 
-The original CLI still works for terminal-based use:
+ממשק ה-CLI המקורי עדיין עובד:
 
 ```bash
-car-seller add       # Add a car interactively
-car-seller list      # List saved cars
-car-seller analyze   # Full analysis in the terminal
-car-seller plan      # Regenerate selling plan
+car-seller add       # הוספת רכב באופן אינטראקטיבי
+car-seller list      # רשימת רכבים שמורים
+car-seller analyze   # ניתוח מלא בטרמינל
+car-seller plan      # יצירה מחדש של תוכנית מכירה
 ```
+
+---
+
+*Tivdok — תבדוק. כי לפני שמוכרים, צריך לדעת.*

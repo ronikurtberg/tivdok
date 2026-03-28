@@ -1,16 +1,14 @@
 import { useState, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Search, ArrowRight, X, Bot, MessageSquare, Megaphone, BadgeCheck, TrendingUp, FileUp, FileCheck2 } from 'lucide-react'
+import { Search, ArrowRight, X, FileUp, FileCheck2 } from 'lucide-react'
 import axios from 'axios'
 
 const BALCAR_URL = 'https://balcar.co.il/?Aff1=GABrand&gad_source=1&gad_campaignid=14123148844&gbraid=0AAAAABUgJY45yoFHpRyxjeh2Xw20kFOxX'
 
-const AGENT_STEPS = [
-  { icon: '📋', title: 'You confirm details', sub: '2 minutes' },
-  { icon: '📣', title: 'Agent publishes everywhere', sub: 'Yad2, Facebook, WhatsApp' },
-  { icon: '💬', title: 'Agent handles all buyers', sub: '24/7, zero effort from you' },
-  { icon: '🤝', title: 'Agent negotiates', sub: 'Gets you the best price' },
-  { icon: '💰', title: 'You just show up to sign', sub: 'That\'s it' },
+const HOW_IT_WORKS = [
+  { icon: '🔍', title: 'הכניסו מספר רכב', sub: 'פשוט כמו גוגל' },
+  { icon: '📊', title: 'מקבלים ניתוח שוק', sub: 'ממודעות אמיתיות ביד2' },
+  { icon: '💰', title: 'יודעים מה לבקש', sub: 'מחיר הוגן ומנצח' },
 ]
 
 export default function StepLanding({ onFound }) {
@@ -19,7 +17,7 @@ export default function StepLanding({ onFound }) {
   const [error, setError] = useState(null)
   const [pdfFile, setPdfFile] = useState(null)
   const [pdfLoading, setPdfLoading] = useState(false)
-  const [mode, setMode] = useState('plate') // 'plate' | 'pdf'
+  const [mode, setMode] = useState('plate')
   const inputRef = useRef()
   const fileRef = useRef()
 
@@ -32,7 +30,7 @@ export default function StepLanding({ onFound }) {
       const { data } = await axios.get(`/api/plate/${clean}`)
       onFound(data)
     } catch (e) {
-      setError(e.response?.data?.detail || 'Plate not found. Check the number and try again.')
+      setError(e.response?.data?.detail || 'לא מצאנו את הרכב. בדקו את המספר ונסו שוב.')
       setLoading(false)
     }
   }
@@ -51,24 +49,21 @@ export default function StepLanding({ onFound }) {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       if (!data.plate) {
-        setError('Could not find a plate number in the PDF. Try typing it manually.')
+        setError('לא מצאנו מספר רכב בקובץ. נסו להקליד את המספר ידנית.')
         setPdfLoading(false)
         return
       }
-      // Merge with gov API data — PDF fields take priority over empty gov fields
       try {
         const { data: govData } = await axios.get(`/api/plate/${data.plate}`)
-        // Gov data wins only when PDF field is missing/null; PDF always wins for body_type, engine_volume, city
         const merged = { ...govData, ...Object.fromEntries(
           Object.entries(data).filter(([, v]) => v !== null && v !== undefined && v !== '')
         )}
         onFound(merged)
       } catch {
-        // Gov lookup failed, use PDF data only
         onFound(data)
       }
     } catch (e) {
-      setError(e.response?.data?.detail || 'Could not read the PDF. Make sure it is an Israeli vehicle license (רישיון רכב).')
+      setError(e.response?.data?.detail || 'לא הצלחנו לקרוא את הקובץ. ודאו שמדובר ברישיון רכב ישראלי (PDF).')
       setPdfLoading(false)
     }
   }
@@ -77,7 +72,7 @@ export default function StepLanding({ onFound }) {
     e.preventDefault()
     const file = e.dataTransfer.files?.[0]
     if (file?.type === 'application/pdf') handlePdfUpload(file)
-    else setError('Please drop a PDF file.')
+    else setError('יש להעלות קובץ PDF בלבד.')
   }
 
   return (
@@ -86,97 +81,85 @@ export default function StepLanding({ onFound }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      padding: '32px 24px 60px',
-      background: `
-        radial-gradient(ellipse 90% 55% at 50% -5%, rgba(124,58,237,0.12) 0%, transparent 60%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(59,130,246,0.07) 0%, transparent 60%),
-        var(--bg)
-      `,
+      padding: '48px 24px 80px',
+      background: 'linear-gradient(180deg, #f0f5ff 0%, #ffffff 340px)',
     }}>
 
-      {/* ── Hero ── */}
+      {/* ── Logo / Brand ── */}
       <motion.div
-        initial={{ opacity: 0, y: -24 }}
+        initial={{ opacity: 0, y: -16 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55 }}
-        style={{ textAlign: 'center', maxWidth: 620, marginBottom: 28 }}
+        transition={{ duration: 0.4 }}
+        style={{ marginBottom: 48, textAlign: 'center' }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 14 }}>
-          <span style={{ fontSize: 32 }}>🤖</span>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            fontSize: 11, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-            background: 'rgba(124,58,237,0.12)', color: '#a78bfa',
-            border: '1px solid rgba(124,58,237,0.3)',
-            padding: '4px 12px', borderRadius: 20,
-          }}>
-            <Bot size={10} /> AI Car Selling Agent · Israel
-          </div>
-        </div>
-
-        <h1 style={{
-          fontSize: 40, fontWeight: 900, letterSpacing: -1.8,
-          lineHeight: 1.08, color: '#fff', marginBottom: 12,
-        }}>
-          Sell your car smarter.<br />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, marginBottom: 6 }}>
+          <span style={{ fontSize: 36 }}>🚗</span>
           <span style={{
-            background: 'linear-gradient(90deg, #a78bfa, #60a5fa)',
-            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          }}>
-            AI handles the whole process.
-          </span>
-        </h1>
-
-        <p style={{ fontSize: 15, color: 'var(--muted)', lineHeight: 1.6, maxWidth: 500, margin: '0 auto 16px' }}>
-          Enter your plate number or upload your license PDF. We'll identify your car, check history,
-          scan live market prices, and set the ideal asking price.
-        </p>
-
-        {/* Social proof row */}
-        <div style={{ display: 'flex', justifyContent: 'center', gap: 16, flexWrap: 'wrap' }}>
-          {[
-            { icon: <BadgeCheck size={12} />, label: 'Ministry of Transport data' },
-            { icon: <TrendingUp size={12} />, label: 'Live Yad2 scan' },
-            { icon: <MessageSquare size={12} />, label: 'Agent handles buyers' },
-          ].map(({ icon, label }) => (
-            <div key={label} style={{
-              display: 'flex', alignItems: 'center', gap: 5,
-              fontSize: 12, color: 'var(--muted)',
-            }}>
-              <span style={{ color: 'var(--accent2)' }}>{icon}</span>
-              {label}
-            </div>
-          ))}
+            fontSize: 36, fontWeight: 900, color: '#1d6ef5', letterSpacing: -1,
+          }}>Tivdok</span>
+          <span style={{ fontSize: 28 }}>|</span>
+          <span style={{ fontSize: 26, fontWeight: 700, color: '#111827', letterSpacing: -0.5 }}>תבדוק</span>
+        </div>
+        <div style={{ fontSize: 16, color: '#6b7280', fontWeight: 500 }}>
+          מכור את הרכב שלך במחיר הנכון — בלי לנחש
         </div>
       </motion.div>
 
-      {/* ── Input section ── */}
+      {/* ── Hero ── */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        style={{ textAlign: 'center', maxWidth: 600, marginBottom: 40 }}
+      >
+        <h1 style={{
+          fontSize: 48, fontWeight: 900, letterSpacing: -1.5,
+          lineHeight: 1.1, color: '#111827', marginBottom: 16,
+        }}>
+          כמה שווה<br />
+          <span style={{ color: '#1d6ef5' }}>הרכב שלך?</span>
+        </h1>
+
+        <p style={{ fontSize: 20, color: '#4b5563', lineHeight: 1.6, marginBottom: 0 }}>
+          הכניסו מספר רכב — נסרוק מאות מודעות ביד2 בזמן אמת
+          ונגיד לכם בדיוק מה לבקש.
+        </p>
+      </motion.div>
+
+      {/* ── Input Card ── */}
       <motion.div
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.18 }}
-        style={{ width: '100%', maxWidth: 500, marginBottom: 56 }}
+        transition={{ duration: 0.5, delay: 0.2 }}
+        style={{
+          width: '100%', maxWidth: 520, marginBottom: 48,
+          background: '#fff',
+          borderRadius: 24,
+          boxShadow: '0 4px 32px rgba(29,110,245,0.12), 0 1px 4px rgba(0,0,0,0.06)',
+          padding: '28px 28px 24px',
+          border: '1px solid #e0e8ff',
+        }}
       >
-        {/* Mode switcher tabs */}
+        {/* Mode tabs */}
         <div style={{
-          display: 'flex', background: 'var(--surface)', borderRadius: 14,
-          padding: 4, marginBottom: 16, border: '1px solid var(--border)',
+          display: 'flex', background: '#f0f5ff', borderRadius: 12,
+          padding: 4, marginBottom: 20,
         }}>
           {[
-            { key: 'plate', icon: <Search size={14} />, label: 'Type plate number' },
-            { key: 'pdf',   icon: <FileUp size={14} />,  label: 'Upload רישיון רכב (PDF)' },
+            { key: 'plate', icon: <Search size={15} />, label: 'מספר רכב' },
+            { key: 'pdf',   icon: <FileUp size={15} />, label: 'רישיון רכב PDF' },
           ].map(({ key, icon, label }) => (
             <button
               key={key}
               onClick={() => { setMode(key); setError(null) }}
               style={{
-                flex: 1, border: 'none', borderRadius: 10, padding: '10px 14px',
-                fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                flex: 1, border: 'none', borderRadius: 9, padding: '11px 14px',
+                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
                 transition: 'all 0.18s',
-                background: mode === key ? 'linear-gradient(135deg, #7c3aed, #3b82f6)' : 'transparent',
-                color: mode === key ? '#fff' : 'var(--muted)',
-                boxShadow: mode === key ? '0 2px 12px rgba(124,58,237,0.3)' : 'none',
+                background: mode === key ? '#1d6ef5' : 'transparent',
+                color: mode === key ? '#fff' : '#6b7280',
+                boxShadow: mode === key ? '0 2px 10px rgba(29,110,245,0.3)' : 'none',
               }}
             >
               {icon} {label}
@@ -184,24 +167,25 @@ export default function StepLanding({ onFound }) {
           ))}
         </div>
 
-        {/* ── Mode: type plate ── */}
+        {/* Plate input */}
         {mode === 'plate' && (
           <>
             <div style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--border2)',
-              borderRadius: 20,
-              padding: 6,
+              background: '#f7f9ff',
+              border: '2px solid #c7d8ff',
+              borderRadius: 16,
+              padding: '6px 6px 6px 12px',
               display: 'flex',
+              alignItems: 'center',
               gap: 8,
-              boxShadow: '0 0 60px rgba(124,58,237,0.12)',
+              marginBottom: 14,
             }}>
               <div style={{
-                background: '#003DA5', borderRadius: 14, width: 44,
+                background: '#003DA5', borderRadius: 10, width: 46, height: 46,
                 display: 'flex', flexDirection: 'column', alignItems: 'center',
-                justifyContent: 'center', gap: 2, flexShrink: 0,
+                justifyContent: 'center', gap: 1, flexShrink: 0,
               }}>
-                <span style={{ fontSize: 18 }}>🇮🇱</span>
+                <span style={{ fontSize: 20 }}>🇮🇱</span>
                 <span style={{ fontSize: 8, color: '#fff', fontWeight: 700, letterSpacing: 1 }}>IL</span>
               </div>
               <input
@@ -215,15 +199,16 @@ export default function StepLanding({ onFound }) {
                 autoFocus
                 style={{
                   flex: 1, background: 'transparent', border: 'none',
-                  fontSize: 28, fontWeight: 800, letterSpacing: 6,
-                  color: '#fff', outline: 'none', textAlign: 'center',
-                  padding: '8px 0', caretColor: 'var(--accent)',
+                  fontSize: 32, fontWeight: 800, letterSpacing: 5,
+                  color: '#111827', outline: 'none', textAlign: 'center',
+                  padding: '6px 0', caretColor: '#1d6ef5', width: '100%',
                 }}
               />
               {plate && (
                 <button onClick={() => setPlate('')} style={{
-                  background: 'transparent', border: 'none', color: 'var(--muted)',
-                  cursor: 'pointer', padding: '0 8px', display: 'flex', alignItems: 'center',
+                  background: '#eef0f4', border: 'none', color: '#6b7280',
+                  cursor: 'pointer', padding: '8px', borderRadius: 8,
+                  display: 'flex', alignItems: 'center',
                 }}>
                   <X size={16} />
                 </button>
@@ -236,26 +221,35 @@ export default function StepLanding({ onFound }) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               style={{
-                width: '100%', marginTop: 10,
-                background: loading ? 'var(--surface2)' : 'linear-gradient(135deg, #7c3aed, #3b82f6)',
-                border: 'none', borderRadius: 14, padding: '17px 24px',
-                fontSize: 17, fontWeight: 700, color: '#fff',
+                width: '100%',
+                background: loading || !plate.trim() ? '#c7d8ff' : '#1d6ef5',
+                border: 'none', borderRadius: 14, padding: '18px 24px',
+                fontSize: 19, fontWeight: 800, color: '#fff',
                 cursor: loading || !plate.trim() ? 'not-allowed' : 'pointer',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                opacity: !plate.trim() ? 0.45 : 1,
-                boxShadow: plate.trim() && !loading ? '0 6px 32px rgba(124,58,237,0.35)' : 'none',
+                boxShadow: plate.trim() && !loading ? '0 6px 24px rgba(29,110,245,0.35)' : 'none',
                 transition: 'all 0.2s',
               }}
             >
               {loading
-                ? <><div className="spinner" style={{ width: 20, height: 20, borderWidth: 2 }} /> Identifying car…</>
-                : <><Bot size={18} /> Start Selling My Car <ArrowRight size={16} /></>
+                ? <><div className="spinner" style={{ width: 22, height: 22, borderWidth: 2, borderColor: '#fff3', borderTopColor: '#fff' }} /> מחפש את הרכב…</>
+                : <>בדוק את הרכב שלי <ArrowRight size={18} /></>
               }
             </motion.button>
+
+            <div style={{ marginTop: 12, textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>
+              דוגמה:{' '}
+              <span
+                onClick={() => setPlate('1234567')}
+                style={{ color: '#1d6ef5', cursor: 'pointer', fontWeight: 700, letterSpacing: 2 }}
+              >
+                12-345-67
+              </span>
+            </div>
           </>
         )}
 
-        {/* ── Mode: PDF upload ── */}
+        {/* PDF upload */}
         {mode === 'pdf' && (
           <>
             <input
@@ -271,36 +265,36 @@ export default function StepLanding({ onFound }) {
               onClick={() => !pdfLoading && fileRef.current?.click()}
               whileHover={{ scale: pdfLoading ? 1 : 1.01 }}
               style={{
-                border: `2px dashed ${pdfFile ? 'var(--accent)' : 'var(--border2)'}`,
-                borderRadius: 20,
-                padding: '36px 24px',
+                border: `2px dashed ${pdfFile ? '#1d6ef5' : '#c7d8ff'}`,
+                borderRadius: 16,
+                padding: '40px 24px',
                 textAlign: 'center',
                 cursor: pdfLoading ? 'default' : 'pointer',
-                background: pdfFile ? 'rgba(59,130,246,0.05)' : 'var(--surface)',
+                background: pdfFile ? '#f0f5ff' : '#f7f9ff',
                 transition: 'all 0.2s',
               }}
             >
               {pdfLoading ? (
                 <>
-                  <div className="spinner" style={{ width: 36, height: 36, borderWidth: 3, margin: '0 auto 12px' }} />
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>Reading your license…</div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>Extracting all vehicle details from PDF</div>
+                  <div className="spinner" style={{ width: 40, height: 40, borderWidth: 3, margin: '0 auto 14px', borderColor: '#c7d8ff', borderTopColor: '#1d6ef5' }} />
+                  <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 6 }}>קורא את הרישיון…</div>
+                  <div style={{ fontSize: 15, color: '#6b7280' }}>מחלץ את כל פרטי הרכב מהקובץ</div>
                 </>
               ) : pdfFile ? (
                 <>
-                  <FileCheck2 size={40} color="var(--accent)" style={{ marginBottom: 10 }} />
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 4 }}>{pdfFile.name}</div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)' }}>Click to change file</div>
+                  <FileCheck2 size={44} color="#1d6ef5" style={{ marginBottom: 12 }} />
+                  <div style={{ fontSize: 17, fontWeight: 700, color: '#111827', marginBottom: 4 }}>{pdfFile.name}</div>
+                  <div style={{ fontSize: 14, color: '#6b7280' }}>לחצו להחלפת קובץ</div>
                 </>
               ) : (
                 <>
-                  <FileUp size={40} color="var(--muted)" style={{ marginBottom: 12 }} />
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 6 }}>
-                    Drop your רישיון רכב here
+                  <FileUp size={44} color="#c7d8ff" style={{ marginBottom: 14 }} />
+                  <div style={{ fontSize: 18, fontWeight: 700, color: '#111827', marginBottom: 8 }}>
+                    גררו לכאן את רישיון הרכב שלכם
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6 }}>
-                    Or click to browse · <strong style={{ color: 'var(--accent2)' }}>PDF only</strong><br />
-                    We'll extract make, model, year, VIN, mileage, and more automatically
+                  <div style={{ fontSize: 15, color: '#6b7280', lineHeight: 1.6 }}>
+                    או <strong style={{ color: '#1d6ef5' }}>לחצו לבחירת קובץ</strong> · PDF בלבד<br />
+                    נחלץ יצרן, דגם, שנה, ק"מ ועוד אוטומטית
                   </div>
                 </>
               )}
@@ -313,92 +307,90 @@ export default function StepLanding({ onFound }) {
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             style={{
-              marginTop: 10,
-              background: 'rgba(239,68,68,0.1)',
-              border: '1px solid rgba(239,68,68,0.3)',
+              marginTop: 14,
+              background: '#fff5f5',
+              border: '1px solid #fecaca',
               borderRadius: 10,
-              padding: '10px 14px',
-              color: 'var(--red)',
-              fontSize: 14,
+              padding: '12px 16px',
+              color: '#dc2626',
+              fontSize: 15,
               display: 'flex',
               alignItems: 'center',
               gap: 8,
+              fontWeight: 500,
             }}
           >
-            <X size={14} /> {error}
+            <X size={16} /> {error}
           </motion.div>
         )}
-
-        <div style={{ marginTop: 16, textAlign: 'center', color: 'var(--muted2)', fontSize: 13 }}>
-          Try an example:{' '}
-          <span
-            onClick={() => setPlate('1234567')}
-            style={{ color: 'var(--accent2)', cursor: 'pointer', fontFamily: 'monospace', letterSpacing: 2 }}
-          >
-            12-345-67
-          </span>
-        </div>
       </motion.div>
 
-      {/* ── Compact steps row ── */}
+      {/* ── How it works ── */}
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: 0.35 }}
-        style={{ width: '100%', maxWidth: 620, marginBottom: 28 }}
+        style={{ width: '100%', maxWidth: 560, marginBottom: 44 }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 0, flexWrap: 'nowrap', overflowX: 'auto' }}>
-          {AGENT_STEPS.map(({ icon, title }, i) => (
-            <div key={title} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+        <div style={{ textAlign: 'center', fontSize: 14, fontWeight: 700, color: '#9ca3af', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 18 }}>
+          איך זה עובד
+        </div>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center', flexWrap: 'wrap' }}>
+          {HOW_IT_WORKS.map(({ icon, title, sub }, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
               <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'var(--surface)', border: '1px solid var(--border)',
-                borderRadius: 10, padding: '7px 12px',
+                background: '#fff',
+                border: '1.5px solid #dde8ff',
+                borderRadius: 16,
+                padding: '16px 20px',
+                textAlign: 'center',
+                minWidth: 140,
+                boxShadow: '0 2px 8px rgba(29,110,245,0.06)',
               }}>
-                <span style={{ fontSize: 16 }}>{icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--muted)', whiteSpace: 'nowrap' }}>{title}</span>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{icon}</div>
+                <div style={{ fontSize: 15, fontWeight: 700, color: '#111827', marginBottom: 3 }}>{title}</div>
+                <div style={{ fontSize: 13, color: '#6b7280' }}>{sub}</div>
               </div>
-              {i < AGENT_STEPS.length - 1 && (
-                <div style={{ color: 'var(--border2)', fontSize: 14, padding: '0 4px', flexShrink: 0 }}>›</div>
+              {i < HOW_IT_WORKS.length - 1 && (
+                <div style={{ fontSize: 20, color: '#c7d8ff', padding: '0 4px' }}>›</div>
               )}
             </div>
           ))}
         </div>
       </motion.div>
 
-      {/* ── Balcar promo strip ── */}
+      {/* ── Balcar strip ── */}
       <motion.a
         href={BALCAR_URL}
         target="_blank"
         rel="noreferrer"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.75 }}
+        transition={{ delay: 0.6 }}
         whileHover={{ scale: 1.01 }}
         style={{
-          marginTop: 40,
           display: 'flex',
           alignItems: 'center',
-          gap: 14,
-          background: 'linear-gradient(135deg, rgba(245,158,11,0.1), rgba(245,158,11,0.04))',
-          border: '1px solid rgba(245,158,11,0.3)',
-          borderRadius: 14,
-          padding: '14px 22px',
+          gap: 16,
+          background: '#fffbeb',
+          border: '1.5px solid #fcd34d',
+          borderRadius: 16,
+          padding: '16px 24px',
           textDecoration: 'none',
           maxWidth: 520,
           width: '100%',
         }}
       >
-        <div style={{ fontSize: 28, flexShrink: 0 }}>🛡️</div>
+        <div style={{ fontSize: 32, flexShrink: 0 }}>🛡️</div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--yellow)', marginBottom: 3 }}>
-            Want a full certified history report?
+          <div style={{ fontSize: 16, fontWeight: 700, color: '#92400e', marginBottom: 4 }}>
+            רוצים דוח היסטוריה מלא?
           </div>
-          <div style={{ fontSize: 13, color: 'var(--muted)' }}>
-            Get a Balcar report — accidents, liens, ownership history, and more. We'll link it into your analysis.
+          <div style={{ fontSize: 14, color: '#78350f', lineHeight: 1.5 }}>
+            דוח Balcar — תאונות, שעבודים, בעלויות. כל הסיפור של הרכב.
           </div>
         </div>
-        <div style={{ marginLeft: 'auto', fontSize: 18, color: 'var(--yellow)', flexShrink: 0 }}>→</div>
+        <div style={{ marginLeft: 'auto', fontSize: 22, color: '#d97706', flexShrink: 0 }}>←</div>
       </motion.a>
 
     </div>

@@ -15,8 +15,8 @@ const STEPS = [
 ]
 
 const STEP_LABELS = [
-  'Plate', 'Identify', 'Confirm', 'Market?',
-  'History', 'Listings', 'Price', 'Autopilot',
+  'התחלה', 'זיהוי', 'אישור', 'שוק?',
+  'היסטוריה', 'מודעות', 'מחיר', 'יועץ',
 ]
 
 function ProgressBar({ step }) {
@@ -25,14 +25,14 @@ function ProgressBar({ step }) {
   const pct = Math.round((idx / (STEPS.length - 1)) * 100)
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, height: 3, zIndex: 200,
-      background: 'var(--border)',
+      position: 'fixed', top: 0, left: 0, right: 0, height: 4, zIndex: 200,
+      background: '#e0e8ff',
     }}>
       <motion.div
         initial={false}
         animate={{ width: `${pct}%` }}
         transition={{ duration: 0.4 }}
-        style={{ height: '100%', background: 'var(--accent)', borderRadius: '0 2px 2px 0' }}
+        style={{ height: '100%', background: '#1d6ef5', borderRadius: '0 2px 2px 0' }}
       />
     </div>
   )
@@ -45,8 +45,10 @@ function StepDots({ step }) {
     <div style={{
       position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)',
       display: 'flex', gap: 8, zIndex: 100,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
-      padding: '8px 16px', borderRadius: 40, border: '1px solid var(--border)',
+      background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(10px)',
+      padding: '8px 16px', borderRadius: 40,
+      border: '1px solid #dde8ff',
+      boxShadow: '0 4px 20px rgba(29,110,245,0.1)',
     }}>
       {STEPS.slice(1).map((s, i) => (
         <div
@@ -55,7 +57,7 @@ function StepDots({ step }) {
           style={{
             width: i + 1 === idx ? 20 : 8,
             height: 8, borderRadius: 4,
-            background: i + 1 <= idx ? 'var(--accent)' : 'var(--border2)',
+            background: i + 1 <= idx ? '#1d6ef5' : '#c7d8ff',
             transition: 'all 0.3s',
           }}
         />

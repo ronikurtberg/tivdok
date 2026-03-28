@@ -1,30 +1,30 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0a0a0b;
-  --surface: #111114;
-  --surface2: #18181c;
-  --surface3: #222228;
-  --border: #2a2a32;
-  --border2: #3a3a45;
-  --accent: #3b82f6;
-  --accent2: #60a5fa;
-  --accent-glow: rgba(59,130,246,0.25);
-  --green: #22c55e;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --text: #e8eaed;
-  --muted: #9ca3af;
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --surface2: #eef0f4;
+  --surface3: #e4e7ed;
+  --border: #dde1e9;
+  --border2: #c8cdd8;
+  --accent: #1d6ef5;
+  --accent2: #0052cc;
+  --accent-glow: rgba(29,110,245,0.18);
+  --green: #16a34a;
+  --red: #dc2626;
+  --yellow: #d97706;
+  --text: #111827;
+  --muted: #4b5563;
   --muted2: #6b7280;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Rubik', system-ui, -apple-system, sans-serif;
 }
 
 html, body, #root {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
 }
 
