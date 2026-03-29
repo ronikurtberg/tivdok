@@ -134,38 +134,49 @@ data.gov.il מחזיר עבור כל מספר רכב (resource `053cea08`):
 
 ## הרצת הפרויקט
 
-### 1. התקנה (פעם ראשונה)
+### 1. שכפול הפרויקט
 
 ```bash
-cd ~/work/car-seller-assistant
+git clone https://github.com/ronikurtberg/tivdok.git
+cd tivdok
+```
+
+### 2. התקנת תלויות (פעם ראשונה)
+
+```bash
+# Python backend (מה-root של הפרויקט)
 uv pip install -e .
 
+# React frontend
 cd frontend
 npm install
 ```
 
-### 2. Backend (FastAPI — port 8000)
+### 3. Backend (FastAPI — port 8000)
+
+מה-root של הפרויקט:
 
 ```bash
-cd ~/work/car-seller-assistant
 .venv/bin/python -m uvicorn car_seller.api:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 3. Frontend (React + Vite — port 5173)
+### 4. Frontend (React + Vite — port 5173)
+
+מתוך תיקיית `frontend`:
 
 ```bash
-cd ~/work/car-seller-assistant/frontend
+cd frontend
 npm run dev
 ```
 
 פתחו **http://localhost:5173**
 
-### 4. מפתחות AI
+### 5. מפתחות AI
 
 ```bash
 cp .env.example .env
 # הוסיפו:
-# OPENAI_API_KEY=sk-...      (GPT-4o-mini — chat + ניתוח תמונות)
+# OPENAI_API_KEY=sk-...        (GPT-4o-mini — chat + ניתוח תמונות)
 # ANTHROPIC_API_KEY=sk-ant-... (Claude Haiku — אופציונלי, משתמש בוחר ב-UI)
 ```
 
