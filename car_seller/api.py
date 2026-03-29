@@ -24,6 +24,9 @@ from car_seller.selling_plan import generate_selling_plan
 from car_seller.vehicle_history import get_vehicle_history
 from car_seller.license_parser import parse_license_pdf
 from car_seller.habasta import create_arena, get_arena
+from car_seller.lobby import (
+    get_lobby, get_dealer, create_session, get_session, seed_lobby, DEALER_PERSONAS
+)
 
 app = FastAPI(
     title="Car Seller Assistant API",
@@ -439,6 +442,101 @@ async def habasta_ws(websocket: WebSocket, arena_id: str):
 
     except WebSocketDisconnect:
         pass
+
+
+# ── הבסטה Lobby ───────────────────────────────────────────────────────────────
+
+@app.get("/api/lobby")
+def lobby_list():
+    """Return all dealer agents currently standing in the lobby."""
+    return {"dealers": get_lobby(), "personas": DEALER_PERSONAS}
+
+
+@app.post("/api/lobby/seed")
+def lobby_seed():
+    """Re-seed the lobby with fresh demo dealers (dev/demo use)."""
+    seed_lobby()
+    return {"dealers": get_lobby()}
+
+
+@app.post("/api/lobby/session")
+def lobby_create_session(body: dict):
+    """Buyer walks up to a dealer and opens a 1-on-1 session."""
+    dealer_sid = body.get("dealer_session_id")
+    buyer_name = body.get("buyer_name", "קונה")
+    buyer_budget = body.get("buyer_budget")
+    if not dealer_sid:
+        raise HTTPException(status_code=400, detail="dealer_session_id required")
+    session = create_session(dealer_sid, buyer_name, buyer_budget)
+    if session is None:
+        raise HTTPException(status_code=409, detail="Dealer not available or already in session")
+    return {"session_id": session.session_id, "status": session.status()}
+
+
+@app.get("/api/lobby/session/{session_id}")
+def lobby_session_status(session_id: str):
+    session = get_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+    return {"status": session.status(), "messages": session.messages}
+
+
+@app.websocket("/ws/lobby/{session_id}")
+async def lobby_ws(websocket: WebSocket, session_id: str):
+    """
+    WebSocket for a live 1-on-1 lobby session.
+    - On connect: dealer sends opener message
+    - Client sends: {"text": "..."} — buyer message
+    - Server streams dealer reply as JSON msg dict
+    - Server sends {"type": "session_closed", ...} when deal or disconnect
+    """
+    session = get_session(session_id)
+    if not session:
+        await websocket.close(code=4004)
+        return
+
+    await websocket.accept()
+
+    async def send(payload: dict):
+        await websocket.send_text(json.dumps(payload, ensure_ascii=False))
+
+    # Dealer opens
+    opener = await session.dealer_opener()
+    await send({"type": "msg", "msg": opener})
+
+    try:
+        while session.active:
+            raw = await websocket.receive_text()
+            data = json.loads(raw)
+
+            buyer_text = data.get("text", "").strip()
+            if not buyer_text:
+                continue
+
+            # Log buyer message
+            buyer_msg = session.add_message(
+                actor="buyer",
+                text=buyer_text,
+                kind="msg",
+            )
+            await send({"type": "msg", "msg": buyer_msg})
+
+            # Dealer replies
+            dealer_msg = await session.dealer_reply(buyer_text)
+            await send({"type": "msg", "msg": dealer_msg})
+
+            if not session.active:
+                break
+
+        await send({
+            "type": "session_closed",
+            "status": session.status(),
+        })
+
+    except WebSocketDisconnect:
+        # Free dealer back to lobby if no deal
+        if not session.deal:
+            session.dealer.dealer_status = "waiting"
 
 
 # ── static files (React build) ────────────────────────────────────────────────

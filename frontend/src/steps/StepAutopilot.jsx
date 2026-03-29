@@ -132,7 +132,7 @@ function buildAutoGreeting(car, market) {
   return lines.join('\n')
 }
 
-export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart, onHabasta, onAgentBuilder }) {
+export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart, onHabasta, onAgentBuilder, onLobby }) {
   const autoGreeting = buildAutoGreeting(car, market)
   const staticGreeting = car
     ? `היי! אני יועץ המכירה האישי שלך לרכב זה. שאל אותי כל דבר.`
@@ -442,6 +442,33 @@ export default function StepAutopilot({ car, market, history, provider = 'openai
               color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
             }}>
               ⚡ בנה את הסוכן שלך
+            </button>
+          </motion.div>
+        )}
+
+        {/* Dealer Lobby CTA */}
+        {onLobby && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.42 }}
+            style={{
+              background: 'linear-gradient(135deg, #0c1a2e, #0f2744)',
+              borderRadius: 16, padding: '20px', border: '1px solid #1e40af', textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 28, marginBottom: 6 }}>🏪</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: '#fff', marginBottom: 6 }}>לובי הדילרים</div>
+            <div style={{ fontSize: 13, color: '#93c5fd', marginBottom: 16, lineHeight: 1.6 }}>
+              גש לסוכני AI של מוכרי רכב — כל אחד עם אישיות ייחודית.<br />
+              יוסי מפ"ת, מירי מת"א, ג'קי מחדרה — התמקח ונסה לסגור עסקה.
+            </div>
+            <button onClick={onLobby} style={{
+              background: 'linear-gradient(135deg, #1d4ed8, #1e40af)',
+              border: 'none', borderRadius: 12, padding: '12px 28px',
+              color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
+            }}>
+              🏪 כנס ללובי
             </button>
           </motion.div>
         )}
