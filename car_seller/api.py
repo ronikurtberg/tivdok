@@ -1,13 +1,14 @@
 """FastAPI backend for Car Seller Assistant."""
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 from pathlib import Path
 from typing import Optional
 
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -22,6 +23,7 @@ from car_seller.official_price import lookup_official_price
 from car_seller.selling_plan import generate_selling_plan
 from car_seller.vehicle_history import get_vehicle_history
 from car_seller.license_parser import parse_license_pdf
+from car_seller.habasta import create_arena, get_arena
 
 app = FastAPI(
     title="Car Seller Assistant API",
@@ -124,7 +126,6 @@ class ChatRequest(BaseModel):
     market: Optional[dict] = None
     official_price: Optional[int] = None
     history: Optional[list] = None
-    provider: str = "openai"  # "openai" or "claude"
 
 
 # ── routes ────────────────────────────────────────────────────────────────────
@@ -207,22 +208,11 @@ def analyze_car(req: AnalyzeRequest):
 def chat_with_advisor(req: ChatRequest):
     """AI advisor chat — answers questions using full car context."""
     openai_key = os.getenv("OPENAI_API_KEY", "")
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    provider = req.provider.lower()
+    if not openai_key or openai_key == "your_openai_api_key_here":
+        raise HTTPException(status_code=503, detail="OpenAI API key not configured")
 
-    _openai_ok = bool(openai_key and openai_key != "your_openai_api_key_here")
-    _claude_ok = bool(anthropic_key and anthropic_key != "your_anthropic_api_key_here")
-
-    if provider == "claude" and _claude_ok:
-        use_claude = True
-    elif provider == "openai" and _openai_ok:
-        use_claude = False
-    elif _openai_ok:
-        use_claude = False
-    elif _claude_ok:
-        use_claude = True
-    else:
-        raise HTTPException(status_code=503, detail="No AI API key configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY to .env")
+    import openai
+    client = openai.OpenAI(api_key=openai_key)
 
     car = req.car or {}
     market = req.market or {}
@@ -296,96 +286,18 @@ Key rules:
 - If you don't have data for something, say so clearly"""
 
     try:
-        if use_claude:
-            import anthropic
-            client = anthropic.Anthropic(api_key=anthropic_key)
-            resp = client.messages.create(
-                model="claude-3-5-haiku-20241022",
-                max_tokens=800,
-                system=system_prompt,
-                messages=[{"role": "user", "content": req.message}],
-            )
-            return {"reply": resp.content[0].text, "provider": "claude"}
-        else:
-            import openai
-            client = openai.OpenAI(api_key=openai_key)
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": req.message},
-                ],
-                temperature=0.6,
-                max_tokens=800,
-            )
-            return {"reply": response.choices[0].message.content, "provider": "openai"}
-    except HTTPException:
-        raise
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": req.message},
+            ],
+            temperature=0.6,
+            max_tokens=800,
+        )
+        return {"reply": response.choices[0].message.content}
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"AI error: {e}")
-
-
-@app.post("/api/score-photos")
-async def score_photos(files: list[UploadFile] = File(...)):
-    """Score uploaded car photos using a vision model vs market quality."""
-    import base64, re as _re
-    openai_key = os.getenv("OPENAI_API_KEY", "")
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    _openai_ok = bool(openai_key and openai_key != "your_openai_api_key_here")
-    _claude_ok = bool(anthropic_key and anthropic_key != "your_anthropic_api_key_here")
-    if not _openai_ok and not _claude_ok:
-        raise HTTPException(status_code=503, detail="No AI API key configured")
-
-    images_b64 = []
-    for f in files[:6]:
-        content = await f.read()
-        b64 = base64.b64encode(content).decode()
-        mime = f.content_type or "image/jpeg"
-        images_b64.append({"b64": b64, "mime": mime})
-
-    prompt = (
-        "You are a professional car listing photo reviewer for the Israeli used-car market.\n"
-        "Analyze these car photos and return a JSON object with:\n"
-        "- score: integer 1-10 (10 = showroom quality)\n"
-        "- verdict: one of \"excellent\", \"good\", \"average\", \"poor\"\n"
-        "- strengths: list of 2-3 short bullet points about what works well (Hebrew ok)\n"
-        "- improvements: list of 2-3 actionable tips to improve (Hebrew ok)\n"
-        "- market_impact: one sentence on how these compare to typical Yad2 listings\n"
-        "Return ONLY valid JSON, no markdown fences."
-    )
-
-    try:
-        raw = ""
-        if _openai_ok:
-            import openai as _openai
-            c = _openai.OpenAI(api_key=openai_key)
-            parts = [{"type": "text", "text": prompt}]
-            for img in images_b64:
-                parts.append({"type": "image_url", "image_url": {
-                    "url": f"data:{img['mime']};base64,{img['b64']}", "detail": "low"}})
-            r = c.chat.completions.create(model="gpt-4o-mini",
-                messages=[{"role": "user", "content": parts}], max_tokens=600)
-            raw = r.choices[0].message.content
-        elif _claude_ok:
-            import anthropic as _anthropic
-            c = _anthropic.Anthropic(api_key=anthropic_key)
-            parts = []
-            for img in images_b64:
-                parts.append({"type": "image", "source": {
-                    "type": "base64", "media_type": img["mime"], "data": img["b64"]}})
-            parts.append({"type": "text", "text": prompt})
-            r = c.messages.create(model="claude-3-haiku-20240307", max_tokens=600,
-                messages=[{"role": "user", "content": parts}])
-            raw = r.content[0].text
-
-        m = _re.search(r'\{.*\}', raw, _re.DOTALL)
-        return json.loads(m.group()) if m else {
-            "score": 5, "verdict": "average", "strengths": [], "improvements": [],
-            "market_impact": "Could not parse response"}
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=502, detail=f"Photo scoring error: {e}")
+        raise HTTPException(status_code=502, detail=f"OpenAI error: {e}")
 
 
 @app.get("/api/cars")
@@ -412,6 +324,121 @@ def delete_car(index: int):
     removed = cars.pop(index)
     _save_cars(cars)
     return {"removed": removed}
+
+
+# ── הבסטה — AI Agent Bazaar ───────────────────────────────────────────────────
+
+class HabastaCreateRequest(BaseModel):
+    seller: dict                 # {car, asking_price, floor_price?, personality?}
+    buyers: list                 # [{budget, preferences?, strategy?, name?}]
+    max_rounds: int = 12
+
+
+@app.post("/api/habasta/create")
+def habasta_create(req: HabastaCreateRequest):
+    """Create a new הבסטה arena session. Returns arena_id."""
+    try:
+        arena = create_arena(req.seller, req.buyers, req.max_rounds)
+        return {"arena_id": arena.id, "status": arena.status()}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@app.get("/api/habasta/{arena_id}/status")
+def habasta_status(arena_id: str):
+    """Get current arena status, all events, escalations."""
+    arena = get_arena(arena_id)
+    if not arena:
+        raise HTTPException(status_code=404, detail="Arena not found")
+    return {
+        "status": arena.status(),
+        "events": [e.to_dict() for e in arena.events],
+    }
+
+
+@app.post("/api/habasta/{arena_id}/human-message")
+def habasta_human_message(arena_id: str, body: dict):
+    """Inject a real human message into the arena (manual walk-in)."""
+    arena = get_arena(arena_id)
+    if not arena:
+        raise HTTPException(status_code=404, detail="Arena not found")
+    actor = body.get("actor", "human_seller")
+    text = body.get("text", "")
+    ev = arena.inject_human_message(actor, text)
+    return {"event": ev.to_dict()}
+
+
+@app.websocket("/ws/habasta/{arena_id}")
+async def habasta_ws(websocket: WebSocket, arena_id: str):
+    """
+    WebSocket stream for הבסטה live negotiation.
+    - On connect: starts running rounds and streams each ArenaEvent as JSON
+    - Client can send: {"type": "human_msg", "actor": "human_seller", "text": "..."}
+      to inject a real human into the arena mid-negotiation
+    - Rounds continue until deal, max_rounds, or client disconnects
+    """
+    arena = get_arena(arena_id)
+    if not arena:
+        await websocket.close(code=4004)
+        return
+
+    await websocket.accept()
+
+    async def send_event(ev):
+        await websocket.send_text(json.dumps(ev.to_dict(), ensure_ascii=False))
+
+    # Announce opening
+    from car_seller.habasta import ArenaEvent, EventKind
+    import time, uuid
+    opening = ArenaEvent(
+        id=str(uuid.uuid4())[:8],
+        kind=EventKind.SYSTEM,
+        actor="system",
+        content=f"🏪 הבסטה פתוחה! {len(arena.buyers)} קונה/ים נכנסו לזירה. המוכר מוכן. תתחיל ההתמקחות!",
+        timestamp=time.time(),
+    )
+    arena.events.append(opening)
+    await send_event(opening)
+
+    try:
+        while arena.active:
+            # Run one round, streaming each event as it's generated
+            round_task = arena.run_round()
+            human_injected = False
+
+            async for ev in round_task:
+                await send_event(ev)
+
+                # Check for incoming human messages between agent turns
+                try:
+                    raw = await asyncio.wait_for(websocket.receive_text(), timeout=0.05)
+                    data = json.loads(raw)
+                    if data.get("type") == "human_msg":
+                        hev = arena.inject_human_message(
+                            data.get("actor", "human_seller"),
+                            data.get("text", ""),
+                        )
+                        await send_event(hev)
+                        human_injected = True
+                except (asyncio.TimeoutError, Exception):
+                    pass
+
+            if not arena.active:
+                break
+
+            # Small pause between rounds
+            await asyncio.sleep(1.0)
+
+        # Send final status
+        final = {
+            "type": "arena_closed",
+            "status": arena.status(),
+            "escalations": arena.escalations,
+        }
+        await websocket.send_text(json.dumps(final, ensure_ascii=False))
+
+    except WebSocketDisconnect:
+        pass
 
 
 # ── static files (React build) ────────────────────────────────────────────────

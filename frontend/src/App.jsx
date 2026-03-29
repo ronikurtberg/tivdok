@@ -7,10 +7,11 @@ import StepHistory from './steps/StepHistory.jsx'
 import StepMarket from './steps/StepMarket.jsx'
 import StepPrice from './steps/StepPrice.jsx'
 import StepAutopilot from './steps/StepAutopilot.jsx'
+import StepHabasta from './steps/StepHabasta.jsx'
 
 const STEPS = [
   'landing', 'car-details', 'market-prompt',
-  'history', 'market', 'price', 'autopilot',
+  'history', 'market', 'price', 'autopilot', 'habasta',
 ]
 
 const STEP_META = [
@@ -21,6 +22,7 @@ const STEP_META = [
   { label: 'מודעות',   icon: '📈', mins: 4 },
   { label: 'מחיר',     icon: '💰', mins: 5 },
   { label: 'יועץ',     icon: '🤖', mins: 6 },
+  { label: 'הבסטה',    icon: '⚔️', mins: 7 },
 ]
 
 function CarBadge({ car }) {
@@ -213,7 +215,15 @@ export default function App() {
               history={historyData}
               provider={aiProvider}
               onProviderChange={setAiProvider}
+              onHabasta={() => go('habasta')}
               onRestart={() => { setCarData(null); setApprovedCar(null); setHistoryData(null); setMarketData(null); go('landing') }}
+            />
+          )}
+          {step === 'habasta' && (
+            <StepHabasta
+              car={approvedCar}
+              market={marketData}
+              onNext={() => go('autopilot')}
             />
           )}
         </motion.div>

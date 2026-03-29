@@ -132,7 +132,7 @@ function buildAutoGreeting(car, market) {
   return lines.join('\n')
 }
 
-export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart }) {
+export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart, onHabasta }) {
   const autoGreeting = buildAutoGreeting(car, market)
   const staticGreeting = car
     ? `היי! אני יועץ המכירה האישי שלך לרכב זה. שאל אותי כל דבר.`
@@ -392,6 +392,33 @@ export default function StepAutopilot({ car, market, history, provider = 'openai
           </div>
         </motion.div>
 
+        {/* הבסטה CTA */}
+        {onHabasta && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            style={{
+              background: 'linear-gradient(135deg, #1e1b4b, #312e81)',
+              borderRadius: 16, padding: '20px', border: '1px solid #4338ca', textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 28, marginBottom: 6 }}>⚔️</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: '#fff', marginBottom: 6 }}>הבסטה — זירת הסוכנים</div>
+            <div style={{ fontSize: 13, color: '#a5b4fc', marginBottom: 16, lineHeight: 1.6 }}>
+              שלח סוכן AI לנהל את המשא ומתן בשמך.<br />
+              קונים עם סוכנים משלהם — עסקאות נסגרות אוטומטית.
+            </div>
+            <button onClick={onHabasta} style={{
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              border: 'none', borderRadius: 12, padding: '12px 28px',
+              color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
+            }}>
+              ⚔️ כנס להבסטה
+            </button>
+          </motion.div>
+        )}
+
         {/* Done + restart */}
         <div style={{ textAlign: 'center', padding: '8px 0 20px' }}>
           <div style={{ fontSize: 22, fontWeight: 800, color: '#111827', marginBottom: 6 }}>🎉 סיימתם!</div>
@@ -399,11 +426,8 @@ export default function StepAutopilot({ car, market, history, provider = 'openai
             יש לכם את כל המידע שצריך כדי למכור נכון.
             {car?.manufacturer ? ` בהצלחה עם ה${car.manufacturer}!` : ' בהצלחה!'}
           </div>
-          <button
-            onClick={onRestart}
-            className="btn-ghost"
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, fontSize: 16 }}
-          >
+          <button onClick={onRestart} className="btn-ghost"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '12px 24px', borderRadius: 14, fontSize: 16 }}>
             <RotateCcw size={16} /> סרוק רכב אחר
           </button>
         </div>
