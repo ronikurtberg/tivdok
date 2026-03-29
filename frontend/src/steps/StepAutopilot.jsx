@@ -132,7 +132,7 @@ function buildAutoGreeting(car, market) {
   return lines.join('\n')
 }
 
-export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart, onHabasta }) {
+export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart, onHabasta, onAgentBuilder }) {
   const autoGreeting = buildAutoGreeting(car, market)
   const staticGreeting = car
     ? `היי! אני יועץ המכירה האישי שלך לרכב זה. שאל אותי כל דבר.`
@@ -415,6 +415,33 @@ export default function StepAutopilot({ car, market, history, provider = 'openai
               color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
             }}>
               ⚔️ כנס להבסטה
+            </button>
+          </motion.div>
+        )}
+
+        {/* Agent Builder CTA */}
+        {onAgentBuilder && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.35 }}
+            style={{
+              background: 'linear-gradient(135deg, #1e1035, #2d1b69)',
+              borderRadius: 16, padding: '20px', border: '1px solid #6d28d9', textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 28, marginBottom: 6 }}>⚡</div>
+            <div style={{ fontWeight: 800, fontSize: 17, color: '#fff', marginBottom: 6 }}>חנות הכישורים</div>
+            <div style={{ fontSize: 13, color: '#c4b5fd', marginBottom: 16, lineHeight: 1.6 }}>
+              צייד את הסוכן שלך בסופרפאוורים.<br />
+              WhatsApp אוטומטי, פרסום מרובה-פלטפורמות, מחיר דינמי ועוד.
+            </div>
+            <button onClick={onAgentBuilder} style={{
+              background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+              border: 'none', borderRadius: 12, padding: '12px 28px',
+              color: '#fff', fontWeight: 800, fontSize: 15, cursor: 'pointer',
+            }}>
+              ⚡ בנה את הסוכן שלך
             </button>
           </motion.div>
         )}

@@ -8,10 +8,11 @@ import StepMarket from './steps/StepMarket.jsx'
 import StepPrice from './steps/StepPrice.jsx'
 import StepAutopilot from './steps/StepAutopilot.jsx'
 import StepHabasta from './steps/StepHabasta.jsx'
+import StepAgentBuilder from './steps/StepAgentBuilder.jsx'
 
 const STEPS = [
   'landing', 'car-details', 'market-prompt',
-  'history', 'market', 'price', 'autopilot', 'habasta',
+  'history', 'market', 'price', 'autopilot', 'habasta', 'agent-builder',
 ]
 
 const STEP_META = [
@@ -23,6 +24,7 @@ const STEP_META = [
   { label: 'מחיר',     icon: '💰', mins: 5 },
   { label: 'יועץ',     icon: '🤖', mins: 6 },
   { label: 'הבסטה',    icon: '⚔️', mins: 7 },
+  { label: 'סוכן',      icon: '⚡', mins: 8 },
 ]
 
 function CarBadge({ car }) {
@@ -216,6 +218,7 @@ export default function App() {
               provider={aiProvider}
               onProviderChange={setAiProvider}
               onHabasta={() => go('habasta')}
+              onAgentBuilder={() => go('agent-builder')}
               onRestart={() => { setCarData(null); setApprovedCar(null); setHistoryData(null); setMarketData(null); go('landing') }}
             />
           )}
@@ -224,6 +227,14 @@ export default function App() {
               car={approvedCar}
               market={marketData}
               onNext={() => go('autopilot')}
+            />
+          )}
+          {step === 'agent-builder' && (
+            <StepAgentBuilder
+              car={approvedCar}
+              market={marketData}
+              onBack={() => go('autopilot')}
+              onHabasta={() => go('habasta')}
             />
           )}
         </motion.div>
