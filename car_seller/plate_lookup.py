@@ -4,20 +4,32 @@ Israeli license plate → vehicle details lookup.
 Uses the data.gov.il public CKAN API:
   Resource: 053cea08-09bc-40ec-8f7a-156f0677aff3  (private & commercial vehicles)
 
-Key fields returned:
-  mispar_rechev   – license plate number
-  tozeret_nm      – manufacturer Hebrew name
-  degem_nm        – model Hebrew name
-  kinuy_mishari   – commercial name (e.g. "COROLLA 1.6")
-  shnat_yitzur    – year of manufacture
-  tzeva_rechev    – color Hebrew name
-  sug_delek_nm    – fuel type Hebrew name
-  mispar_manoa    – engine volume (cc)
-  hanaa_nm        – drive type Hebrew name (FWD/AWD etc.)
-  sug_guf_nm      – body type Hebrew name
-  mispar_dlatot   – number of doors
-  moshav_nm       – city of owner registration
-  baalut          – ownership / hand number
+Actual fields in this resource (confirmed by API introspection):
+  mispar_rechev     – license plate number
+  tozeret_nm        – manufacturer Hebrew name
+  degem_nm          – model code (internal, e.g. "VZJ90L-GJPNKW")
+  kinuy_mishari     – commercial name (e.g. "COROLLA 1.6", "PRADO")
+  ramat_gimur       – trim level (e.g. "CLASSICOPLUS", "STD")
+  shnat_yitzur      – year of manufacture
+  tzeva_rechev      – color Hebrew name
+  sug_delek_nm      – fuel type Hebrew name
+  degem_manoa       – engine MODEL CODE (e.g. "5VZ") — NOT engine cc
+  mivchan_acharon_dt– last annual test (טסט) date
+  tokef_dt          – license validity (תוקף רישיון) date
+  baalut            – ownership TYPE (e.g. "פרטי" = private) — NOT hand number
+  misgeret          – VIN / chassis number
+  moed_aliya_lakvish– first road registration date
+  zmig_kidmi/ahori  – tire spec front/rear
+  kvutzat_zihum     – pollution group
+
+NOT available in this resource:
+  engine_volume (cc), doors, body type, city, hand number (previous owner count)
+
+Where do Yad2 / other sites get these?
+  From the vehicle model catalog resources on data.gov.il (e.g. degem-rechev-wltp
+  package) which link via degem_cd / tozeret_cd to specs tables. These require a
+  second lookup by model code. For now we parse these from the PDF (רישיון רכב)
+  when the user uploads one. Implementing the second API lookup is a TODO.
 """
 from __future__ import annotations
 
