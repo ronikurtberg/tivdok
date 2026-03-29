@@ -142,7 +142,7 @@ function SkillCard({ skill, equipped, onToggle }) {
       className={`relative rounded-2xl border p-4 cursor-pointer transition-all bg-gradient-to-br ${skill.bg} ${skill.border} ${equipped ? "ring-2 ring-white/20" : ""}`}
     >
       {skill.tag && (
-        <span className={`absolute top-3 left-3 text-white text-xs font-bold px-2 py-0.5 rounded-full ${skill.tagColor}`}>
+        <span className={`absolute top-3 right-3 text-white text-xs font-bold px-2 py-0.5 rounded-full ${skill.tagColor}`}>
           {skill.tag}
         </span>
       )}
@@ -297,7 +297,7 @@ export default function StepAgentBuilder({ car, onBack, onHabasta }) {
           </div>
           {onBack && (
             <button onClick={onBack} className="text-slate-500 hover:text-slate-300 transition-colors text-sm">
-              ← חזור
+              → חזור
             </button>
           )}
         </div>
@@ -332,9 +332,9 @@ export default function StepAgentBuilder({ car, onBack, onHabasta }) {
           ))}
         </div>
 
-        <div className="flex gap-6 items-start">
+        <div className="flex flex-row-reverse gap-6 items-start">
 
-          {/* Left: skills or bundles */}
+          {/* Right (RTL: main): skills or bundles */}
           <div className="flex-1">
             <AnimatePresence mode="wait">
               {activeTab === "skills" && (
@@ -370,7 +370,7 @@ export default function StepAgentBuilder({ car, onBack, onHabasta }) {
                             </div>
                             <span className="text-white/80 text-xs">{bundle.saving}</span>
                           </div>
-                          <div className="text-right">
+                          <div className="text-left">
                             <div className="text-white font-bold text-xl">{bundle.priceLabel}</div>
                             <button onClick={() => applyBundle(bundle)}
                               className="mt-1 bg-white/20 hover:bg-white/30 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition-all">
@@ -404,7 +404,7 @@ export default function StepAgentBuilder({ car, onBack, onHabasta }) {
                     <div className="flex gap-2 justify-center mt-3 flex-wrap">
                       {["🧠 סוכן מומחה BMW", "💼 סוכן דילר", "🔎 סוכן ציד עסקאות"].map(t => (
                         <span key={t} className="text-xs bg-indigo-900/60 text-indigo-300 border border-indigo-700/40 px-3 py-1 rounded-full">
-                          {t} <Lock className="inline w-2.5 h-2.5 ml-1 opacity-60" />
+                          {t} <Lock className="inline w-2.5 h-2.5 mr-1 opacity-60" />
                         </span>
                       ))}
                     </div>
@@ -414,7 +414,7 @@ export default function StepAgentBuilder({ car, onBack, onHabasta }) {
             </AnimatePresence>
           </div>
 
-          {/* Right: agent preview */}
+          {/* Left (RTL: side): agent preview */}
           <div className="w-56 shrink-0 hidden sm:block">
             <AgentPreview equipped={equipped} totalPrice={totalPrice} />
           </div>

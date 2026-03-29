@@ -308,7 +308,7 @@ function ArenaScreen({ arenaId, buyers, car }) {
           <div key={i} className="flex items-center gap-1.5 bg-blue-950/60 border border-blue-800/40 rounded-lg px-3 py-1.5 shrink-0">
             <Bot className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-blue-300 text-xs font-medium">{b.name}</span>
-            <span className="text-slate-500 text-xs">({b.strategy})</span>
+            <span className="text-slate-500 text-xs">({b.strategy === "haggler" ? "מתמקח" : b.strategy === "sniper" ? "צלף" : "סבלני"})</span>
           </div>
         ))}
         <div className="flex items-center gap-1.5 bg-purple-950/60 border border-purple-800/40 rounded-lg px-3 py-1.5 shrink-0">
