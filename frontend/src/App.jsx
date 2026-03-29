@@ -1,8 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import StepLanding from './steps/StepLanding.jsx'
-import StepIdentify from './steps/StepIdentify.jsx'
-import StepApprove from './steps/StepApprove.jsx'
+import StepCarDetails from './steps/StepCarDetails.jsx'
 import StepMarketPrompt from './steps/StepMarketPrompt.jsx'
 import StepHistory from './steps/StepHistory.jsx'
 import StepMarket from './steps/StepMarket.jsx'
@@ -10,19 +9,18 @@ import StepPrice from './steps/StepPrice.jsx'
 import StepAutopilot from './steps/StepAutopilot.jsx'
 
 const STEPS = [
-  'landing', 'identify', 'approve', 'market-prompt',
+  'landing', 'car-details', 'market-prompt',
   'history', 'market', 'price', 'autopilot',
 ]
 
 const STEP_META = [
   { label: 'התחלה',    icon: '🏠', mins: 0 },
-  { label: 'זיהוי',    icon: '🔍', mins: 1 },
-  { label: 'אישור',    icon: '✅', mins: 2 },
-  { label: 'שוק?',     icon: '📊', mins: 3 },
-  { label: 'היסטוריה', icon: '📋', mins: 4 },
-  { label: 'מודעות',   icon: '📈', mins: 5 },
-  { label: 'מחיר',     icon: '💰', mins: 6 },
-  { label: 'יועץ',     icon: '🤖', mins: 7 },
+  { label: 'פרטי רכב', icon: '🚗', mins: 1 },
+  { label: 'שוק?',     icon: '📊', mins: 2 },
+  { label: 'היסטוריה', icon: '📋', mins: 3 },
+  { label: 'מודעות',   icon: '📈', mins: 4 },
+  { label: 'מחיר',     icon: '💰', mins: 5 },
+  { label: 'יועץ',     icon: '🤖', mins: 6 },
 ]
 
 function CarBadge({ car }) {
@@ -133,11 +131,12 @@ function Timeline({ step }) {
 
 export default function App() {
   const [step, setStep] = useState('landing')
-  const [carData, setCarData] = useState(null)       // from plate lookup
-  const [approvedCar, setApprovedCar] = useState(null) // after user confirms
+  const [carData, setCarData] = useState(null)
+  const [approvedCar, setApprovedCar] = useState(null)
   const [historyData, setHistoryData] = useState(null)
   const [marketData, setMarketData] = useState(null)
   const [scanKey, setScanKey] = useState(0)
+  const [aiProvider, setAiProvider] = useState('openai')
 
   const go = (s) => {
     if (s === 'market') setScanKey(k => k + 1)
@@ -167,21 +166,14 @@ export default function App() {
         >
           {step === 'landing' && (
             <StepLanding
-              onFound={(data) => { setCarData(data); go('identify') }}
+              onFound={(data) => { setCarData(data); go('car-details') }}
             />
           )}
-          {step === 'identify' && (
-            <StepIdentify
+          {step === 'car-details' && (
+            <StepCarDetails
               carData={carData}
-              onApprove={(car) => { setApprovedCar(car); go('approve') }}
-              onBack={() => go('landing')}
-            />
-          )}
-          {step === 'approve' && (
-            <StepApprove
-              car={approvedCar}
               onConfirm={(car) => { setApprovedCar(car); go('market-prompt') }}
-              onBack={() => go('identify')}
+              onBack={() => go('landing')}
             />
           )}
           {step === 'market-prompt' && (
@@ -219,6 +211,8 @@ export default function App() {
               car={approvedCar}
               market={marketData}
               history={historyData}
+              provider={aiProvider}
+              onProviderChange={setAiProvider}
               onRestart={() => { setCarData(null); setApprovedCar(null); setHistoryData(null); setMarketData(null); go('landing') }}
             />
           )}

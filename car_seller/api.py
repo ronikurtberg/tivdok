@@ -124,6 +124,7 @@ class ChatRequest(BaseModel):
     market: Optional[dict] = None
     official_price: Optional[int] = None
     history: Optional[list] = None
+    provider: str = "openai"  # "openai" or "claude"
 
 
 # ── routes ────────────────────────────────────────────────────────────────────
@@ -206,11 +207,22 @@ def analyze_car(req: AnalyzeRequest):
 def chat_with_advisor(req: ChatRequest):
     """AI advisor chat — answers questions using full car context."""
     openai_key = os.getenv("OPENAI_API_KEY", "")
-    if not openai_key or openai_key == "your_openai_api_key_here":
-        raise HTTPException(status_code=503, detail="OpenAI API key not configured")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    provider = req.provider.lower()
 
-    import openai
-    client = openai.OpenAI(api_key=openai_key)
+    _openai_ok = bool(openai_key and openai_key != "your_openai_api_key_here")
+    _claude_ok = bool(anthropic_key and anthropic_key != "your_anthropic_api_key_here")
+
+    if provider == "claude" and _claude_ok:
+        use_claude = True
+    elif provider == "openai" and _openai_ok:
+        use_claude = False
+    elif _openai_ok:
+        use_claude = False
+    elif _claude_ok:
+        use_claude = True
+    else:
+        raise HTTPException(status_code=503, detail="No AI API key configured. Add OPENAI_API_KEY or ANTHROPIC_API_KEY to .env")
 
     car = req.car or {}
     market = req.market or {}
@@ -284,18 +296,96 @@ Key rules:
 - If you don't have data for something, say so clearly"""
 
     try:
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": req.message},
-            ],
-            temperature=0.6,
-            max_tokens=800,
-        )
-        return {"reply": response.choices[0].message.content}
+        if use_claude:
+            import anthropic
+            client = anthropic.Anthropic(api_key=anthropic_key)
+            resp = client.messages.create(
+                model="claude-3-5-haiku-20241022",
+                max_tokens=800,
+                system=system_prompt,
+                messages=[{"role": "user", "content": req.message}],
+            )
+            return {"reply": resp.content[0].text, "provider": "claude"}
+        else:
+            import openai
+            client = openai.OpenAI(api_key=openai_key)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": req.message},
+                ],
+                temperature=0.6,
+                max_tokens=800,
+            )
+            return {"reply": response.choices[0].message.content, "provider": "openai"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=502, detail=f"OpenAI error: {e}")
+        raise HTTPException(status_code=502, detail=f"AI error: {e}")
+
+
+@app.post("/api/score-photos")
+async def score_photos(files: list[UploadFile] = File(...)):
+    """Score uploaded car photos using a vision model vs market quality."""
+    import base64, re as _re
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    _openai_ok = bool(openai_key and openai_key != "your_openai_api_key_here")
+    _claude_ok = bool(anthropic_key and anthropic_key != "your_anthropic_api_key_here")
+    if not _openai_ok and not _claude_ok:
+        raise HTTPException(status_code=503, detail="No AI API key configured")
+
+    images_b64 = []
+    for f in files[:6]:
+        content = await f.read()
+        b64 = base64.b64encode(content).decode()
+        mime = f.content_type or "image/jpeg"
+        images_b64.append({"b64": b64, "mime": mime})
+
+    prompt = (
+        "You are a professional car listing photo reviewer for the Israeli used-car market.\n"
+        "Analyze these car photos and return a JSON object with:\n"
+        "- score: integer 1-10 (10 = showroom quality)\n"
+        "- verdict: one of \"excellent\", \"good\", \"average\", \"poor\"\n"
+        "- strengths: list of 2-3 short bullet points about what works well (Hebrew ok)\n"
+        "- improvements: list of 2-3 actionable tips to improve (Hebrew ok)\n"
+        "- market_impact: one sentence on how these compare to typical Yad2 listings\n"
+        "Return ONLY valid JSON, no markdown fences."
+    )
+
+    try:
+        raw = ""
+        if _openai_ok:
+            import openai as _openai
+            c = _openai.OpenAI(api_key=openai_key)
+            parts = [{"type": "text", "text": prompt}]
+            for img in images_b64:
+                parts.append({"type": "image_url", "image_url": {
+                    "url": f"data:{img['mime']};base64,{img['b64']}", "detail": "low"}})
+            r = c.chat.completions.create(model="gpt-4o-mini",
+                messages=[{"role": "user", "content": parts}], max_tokens=600)
+            raw = r.choices[0].message.content
+        elif _claude_ok:
+            import anthropic as _anthropic
+            c = _anthropic.Anthropic(api_key=anthropic_key)
+            parts = []
+            for img in images_b64:
+                parts.append({"type": "image", "source": {
+                    "type": "base64", "media_type": img["mime"], "data": img["b64"]}})
+            parts.append({"type": "text", "text": prompt})
+            r = c.messages.create(model="claude-3-haiku-20240307", max_tokens=600,
+                messages=[{"role": "user", "content": parts}])
+            raw = r.content[0].text
+
+        m = _re.search(r'\{.*\}', raw, _re.DOTALL)
+        return json.loads(m.group()) if m else {
+            "score": 5, "verdict": "average", "strengths": [], "improvements": [],
+            "market_impact": "Could not parse response"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=502, detail=f"Photo scoring error: {e}")
 
 
 @app.get("/api/cars")

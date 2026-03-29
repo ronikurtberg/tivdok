@@ -132,7 +132,7 @@ function buildAutoGreeting(car, market) {
   return lines.join('\n')
 }
 
-export default function StepAutopilot({ car, market, history, onRestart }) {
+export default function StepAutopilot({ car, market, history, provider = 'openai', onProviderChange, onRestart }) {
   const autoGreeting = buildAutoGreeting(car, market)
   const staticGreeting = car
     ? `היי! אני יועץ המכירה האישי שלך לרכב זה. שאל אותי כל דבר.`
@@ -164,8 +164,9 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
         market: market || null,
         official_price: market?.official_price || null,
         history: history || null,
+        provider,
       })
-      setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      setMessages(prev => [...prev, { role: 'assistant', content: data.reply, provider: data.provider }])
     } catch (err) {
       const detail = err.response?.data?.detail || 'Something went wrong. Please try again.'
       setMessages(prev => [...prev, { role: 'assistant', content: `⚠️ ${detail}` }])
@@ -192,8 +193,9 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
           market: market || null,
           official_price: market?.official_price || null,
           history: history || null,
+          provider,
         })
-        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+        setMessages(prev => [...prev, { role: 'assistant', content: data.reply, provider: data.provider }])
       } catch {}
       finally { setLoading(false) }
     }, 900)
@@ -209,14 +211,40 @@ export default function StepAutopilot({ car, market, history, onRestart }) {
 
       {/* Top bar */}
       <div style={{
-        background: '#fff', padding: '14px 20px',
+        background: '#fff', padding: '12px 16px',
         borderBottom: '1px solid var(--border)',
         position: 'sticky', top: 0, zIndex: 10,
       }}>
-        <div style={{ fontWeight: 800, fontSize: 20, color: '#111827' }}>🤖 יועץ מכירה AI</div>
-        <div style={{ fontSize: 13, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 5, marginTop: 2 }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--green)', flexShrink: 0 }} />
-          {car ? `${car.year || ''} ${car.manufacturer || ''} ${car.model || ''}`.trim() : 'הרכב שלך'} — מחובר לנתונים חיים
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <div>
+            <div style={{ fontWeight: 800, fontSize: 18, color: '#111827' }}>🤖 יועץ מכירה AI</div>
+            <div style={{ fontSize: 12, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--green)' }} />
+              {car ? `${car.year || ''} ${car.manufacturer_en || car.manufacturer || ''} ${car.model_en || car.model || ''}`.trim() : 'הרכב שלך'} — נתונים חיים
+            </div>
+          </div>
+          {onProviderChange && (
+            <div style={{ display: 'flex', background: '#f0f5ff', borderRadius: 12, padding: 3, gap: 2 }}>
+              {[
+                { id: 'openai', label: 'GPT', icon: '🟢' },
+                { id: 'claude', label: 'Claude', icon: '🟠' },
+              ].map(p => {
+                const active = provider === p.id
+                return (
+                  <button key={p.id} onClick={() => onProviderChange(p.id)} style={{
+                    padding: '6px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                    background: active ? '#fff' : 'transparent',
+                    color: active ? '#111827' : '#9ca3af',
+                    fontWeight: active ? 700 : 500, fontSize: 13,
+                    boxShadow: active ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+                    transition: 'all 0.15s',
+                  }}>
+                    {p.icon} {p.label}
+                  </button>
+                )
+              })}
+            </div>
+          )}
         </div>
       </div>
 
